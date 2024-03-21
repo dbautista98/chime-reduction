@@ -50,7 +50,7 @@ def plot_waterfall(data_path, start_path, end_path, outdir="./"):
     fig = plt.figure(figsize=(10,10))
     gs = fig.add_gridspec(2,2, hspace=0.02, wspace=0.03, width_ratios=[3,1], height_ratios=[1,3])
     (ax1, ax2), (ax3, ax4) = gs.subplots(sharex="col", sharey="row")
-    ax1.set_title(f"GBO CHIME outrigger data\n{start_time.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")} to {end_time.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")}")
+    ax1.set_title(f"GBO CHIME outrigger data\n{start_time.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')} to {end_time.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}")
     ax1.semilogy(frequency, average_spectrum, color="black", linewidth=1)
     ax1.set_ylabel("average power [counts]")
     ax2.set_visible(not ax2)
@@ -85,7 +85,7 @@ def make_waterfalls():
         pass
 
     for date in dirs:
-        if os.path.exists(f"{date}/{date.replace("/", "")}_waterfall.png"):
+        if os.path.exists(f"{date}/{date.replace('/', '')}_waterfall.png"):
             pass
         else:
             contents = glob.glob(date + "/*npy")
