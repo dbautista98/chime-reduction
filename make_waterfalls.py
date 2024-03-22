@@ -65,7 +65,8 @@ def plot_waterfall(data_path, start_path, end_path, outdir="./"):
 
 def move_files():
     all_files = glob.glob("*npy")
-
+    if len(all_files) == 0:
+        print("ERROR:: no data found")
     data_dir = "/users/dbautist/CHIME_landing_directory/"
 
     for file in all_files:

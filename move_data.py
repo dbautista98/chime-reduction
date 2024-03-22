@@ -14,7 +14,8 @@ def check_dir(filepath):
 def move_data():
     all_dirs = glob.glob("*_*/")
     data_dir = "/lustre/cv/projects/ESM/CHIME_data/"
-
+    if len(all_dirs) == 0:
+        print("ERROR:: no data found")
     try:
         all_dirs.remove("__pycache__/")
     except Exception:
