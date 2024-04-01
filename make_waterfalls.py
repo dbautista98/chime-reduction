@@ -45,7 +45,7 @@ def plot_waterfall(data_path, start_path, end_path, outdir="./"):
     time_series = np.sum(CHIME_data, axis=1)
     average_spectrum = np.mean(CHIME_data, axis=0)
 
-    extent = [frequency.min(), frequency.max(), min(timestamps), max(timestamps)]
+    extent = [frequency.min(), frequency.max(), max(timestamps), min(timestamps)]
 
     fig = plt.figure(figsize=(10,10))
     gs = fig.add_gridspec(2,2, hspace=0.02, wspace=0.03, width_ratios=[3,1], height_ratios=[1,3])
@@ -57,7 +57,7 @@ def plot_waterfall(data_path, start_path, end_path, outdir="./"):
     ax3.imshow(CHIME_data, aspect="auto", extent=extent, vmin=0, vmax=4e7)
     ax3.set_xlabel("Frequency [MHz]")
     ax3.set_ylabel("UTC time (mm-dd hh)")
-    ax4.plot(time_series[::-1], timestamps, color="black", linewidth=1)
+    ax4.plot(time_series, timestamps, color="black", linewidth=1)
     ax4.set_xlabel("integrated power\n[counts]")
     plt.savefig(f"{outdir}/{start_time.strftime('%Y_%j')}_waterfall.png", bbox_inches="tight", transparent=False)
     print(f"saved plot to: {outdir}/{start_time.strftime('%Y_%j')}_waterfall.png")
