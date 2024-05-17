@@ -61,6 +61,8 @@ def get_alt_az(data):
     rows = data.split("</tr>")[3:-1]
     for i in range(len(rows)):
         one_row = rows[i].split()[1:]
+        if "dropped" in one_row:
+            break
         altitude.append(float(one_row[1].replace("<td>", "").replace("</td>", "")[:-1]))
         azimuth.append(float(one_row[2].replace("<td>", "").replace("</td>", "")[:-1]))
         times.append(one_row[0].replace("<td>", "").replace("</td>", ""))
