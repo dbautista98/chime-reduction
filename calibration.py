@@ -21,7 +21,10 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
     lower = matched_index - 300
     upper = matched_index + 300
     freq_slice = data_grid[lower:upper, index]
-    xx = np.arange(lower, upper)
+    # mask rfi in sun 
+    mask = np.where(freq_slice < 1e9)
+    freq_slice = freq_slice[mask]
+    xx = np.linspace(lower, upper, num=len(freq_slice))#np.arange(lower, upper) # may need to be linspace
     coeff, cov = curve_fit(gaussian, xx, freq_slice, p0=(1e8, matched_index, 10, 1e7))
     height, center, width, baseline = coeff
     counts_to_flux = flux / height
@@ -30,7 +33,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
     ## ======================= DEBUG =======================
     if debug:
         fig, axs = plt.subplots(2)
-        axs[0].plot(xx, freq_slice, label="raw counts")
+        axs[0].plot(np.arange(lower, upper), data_grid[lower:upper, index], label="raw counts")
         axs[0].plot(xx, gaussian(xx, *coeff), label="fitted gaussian")
         axs[0].hlines(0, lower, upper, label="zero", color="black")
         axs[0].hlines(baseline, lower, upper, label="baseline counts", color='red')
@@ -38,9 +41,11 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
         axs[0].set_xlim(lower, upper)
         axs[0].set_ylabel("power [counts]")
 
-        refit, cov = curve_fit(gaussian, xx,  calibrated_grid[lower:upper, index], p0=(800000, matched_index, 10, 1e5))
+        calibrated_slice = calibrated_grid[lower:upper, index]
+        calibrated_slice = calibrated_slice[mask]
+        refit, cov = curve_fit(gaussian, xx,  calibrated_slice, p0=(800000, matched_index, 10, 1e5))
         
-        axs[1].plot(xx, calibrated_grid[lower:upper, index], label="calibrated data")
+        axs[1].plot(np.arange(lower, upper), calibrated_grid[lower:upper, index], label="calibrated data")
         axs[1].hlines(flux, lower, upper, label="given flux", color="black")
         axs[1].hlines(refit[0], lower, upper, label="fitted flux", color="red", linestyle="dashed")
         axs[1].hlines(refit[0] + refit[-1], lower, upper, label="given flux + baseline", color="orange", linestyle="dashed")
