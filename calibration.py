@@ -5,6 +5,9 @@ import numpy as np
 import os
 import pandas as pd
 import pytz 
+from astropy import units as u
+import astropy.coordinates as coord
+from astropy.time import Time
 
 from datetime import datetime, timezone, timedelta
 from scipy.optimize import curve_fit
@@ -13,7 +16,7 @@ from scipy.optimize import curve_fit
 def gaussian(x, height, center, width, baseline):
     return height * np.exp( -(x - center)**2 / (2*width)**2) + baseline
 
-def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matched_index=1900):
+def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matched_index=1900, outdir=".", filename='test'):
     index = np.argmin(np.abs(target_freq - freq_array))
     lower = matched_index - 300
     upper = matched_index + 300
@@ -47,7 +50,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
         axs[1].set_xlim(lower, upper)
         axs[1].set_ylabel("calibrated flux [Jy]")
 
-        fig.savefig("test.png", bbox_inches="tight", transparent=False)
+        fig.savefig(f"{outdir}/{filename}.png", bbox_inches="tight", transparent=False)
         plt.close()
     ## ======================= END DEBUG =======================
 
@@ -145,6 +148,10 @@ def get_closest_position(sun_positions, data_timestamps, target_azimuth=305.3, t
     return matched_index
 
 def normal_vector(phi, theta, degrees=True):
+    """
+    phi is the azimuthal angle and runs from 0 to 2 pi radians
+    theta is the altitude angle and runs from -pi/2 to pi/2
+    """
     if degrees:
         phi = phi * np.pi / 180
         theta = theta * np.pi / 180
@@ -160,3 +167,15 @@ def reduce_learmonth_data(df, tolerance=10, key="410"):
     sun_track = df.iloc[mask]
 
     return sun_track
+
+def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
+    loc = coord.EarthLocation(lat=lat * u.deg,
+                              lon=lon * u.deg)
+    
+    t = Time(timestamp, scale="utc")
+    altaz = coord.AltAz(location=loc, obstime=t)
+    sun = coord.get_sun(t)
+
+    alt = sun.transform_to(altaz).alt.deg
+    az =  sun.transform_to(altaz).az.deg
+    return alt, az
