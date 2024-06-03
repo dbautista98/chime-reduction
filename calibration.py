@@ -13,6 +13,18 @@ from datetime import datetime, timezone, timedelta
 from scipy.optimize import curve_fit
 
 
+#### CHIME definitions
+CHIME_azimuth  = 305.3 # degrees
+CHIME_altitude = 59.9129 # degrees: with zenith = 90 and nadir = -90
+
+CHIME_latitude = 38.433056  # earth latitude  in degrees
+CHIME_longitude= -79.839722 # earth longitude in degrees 
+
+median_410 = 42 * 1e4 # median solar flux at 410 MHz in Jy
+median_610 = 65 * 1e4 # median solar flux at 610 MHz in Jy
+sd_410 = 13.36 * 1e4  # standard deviation of solar flux at 410 MHz in Jy
+sd_610 = 8.59 * 1e4   # standard deviation of solar flux at 610 MHz in Jy
+
 def gaussian(x, height, center, width, baseline):
     return height * np.exp( -(x - center)**2 / (2*width)**2) + baseline
 
@@ -184,3 +196,31 @@ def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
     alt = sun.transform_to(altaz).alt.deg
     az =  sun.transform_to(altaz).az.deg
     return alt, az
+
+def calibration(chime_path, target_freq=610, target_flux=65 * 1e4, debug=False, outdir='.', filename='test'):
+    date = chime_path.split("/")[-2]
+    try:
+        sun_df = pd.read_csv(f"/users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv")
+    except:
+        solution = "please run: python3 /users/dbautist/CHIME_landing_directory/get_sun_position.py --help"
+        raise Exception(f"file not found: /users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv\n{solution}")
+    data_grid, frequency, timestamps = load_CHIME_data(chime_path)
+
+    matched_index = get_closest_position(sun_df, timestamps)
+
+    sun_alt, sun_az = solar_position(timestamps[matched_index], lat=CHIME_latitude, lon=CHIME_longitude, unit=u.deg)
+    sun_vector =   normal_vector(sun_az, sun_alt, degrees=True)
+    chime_vector = normal_vector(CHIME_azimuth, CHIME_altitude, degrees=True)
+
+    sun_projection_on_chime = np.dot(sun_vector, chime_vector)
+
+    calibrated_grid = gauss_fit_peak(data_grid, 
+                                     frequency, 
+                                     target_freq, 
+                                     target_flux * sun_projection_on_chime, 
+                                     matched_index=matched_index, 
+                                     debug=debug,
+                                     outdir=outdir,
+                                     filename=filename)
+    
+    return calibrated_grid
