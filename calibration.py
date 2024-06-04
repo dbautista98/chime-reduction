@@ -30,8 +30,8 @@ def gaussian(x, height, center, width, baseline):
 
 def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matched_index=1900, outdir=".", filename='test'):
     index = np.argmin(np.abs(target_freq - freq_array))
-    lower = matched_index - 300
-    upper = matched_index + 300
+    lower = max((matched_index - 300, 0))
+    upper = min((matched_index + 300, len(data_grid)-1))
     freq_slice = data_grid[lower:upper, index]
     # mask rfi in sun 
     mask = np.where(freq_slice < 1e9)
@@ -73,7 +73,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
 
     return calibrated_grid
 
-def load_CHIME_data(data_dir):
+def load_CHIME_data(data_dir, unit="MHz"):
     files = glob.glob(f"{data_dir}/*npy")
     files.sort()
     data_path, end_path, start_path = files
@@ -83,10 +83,17 @@ def load_CHIME_data(data_dir):
     start_time = start_data[()].astimezone(timezone.utc)
     end_time = end_data[()].astimezone(timezone.utc)
 
-    frequency = np.linspace(400, 800, num=1024) # frequency in MHz
+    df = -0.390625
+    frequency = np.arange(800, 400, df)[::-1] # frequency in MHz
 
     dt = (end_time - start_time).seconds / CHIME_data.shape[0]
     timestamps = [start_time + timedelta(seconds=dt*i) for i in range(len(CHIME_data))]
+
+    if unit == "MHz":
+        frequency = frequency
+    if unit == "Hz":
+        frequency = frequency * 1e6
+
     return CHIME_data, frequency, timestamps
 
 def load_Learmonth_data(data):
