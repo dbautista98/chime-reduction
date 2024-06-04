@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 import glob
+import calibration
 
 def load_data(data_path):
     CHIME_data = np.load(data_path, allow_pickle=True)
@@ -31,13 +32,16 @@ def check_dir(filepath):
     else:
         os.mkdir(filepath)
         return
-    
 
-def write_csv(data_path, start_path, outdir="./"):
-    date = get_date(data_path)
-    data_grid, frequency = load_data(data_path)
+def write_csv(data_path, outdir="."):
+    date = data_path.split("/")[-2]
+    contents = glob.glob(date + "/*npy")
+    contents.sort()
 
-    start_data = np.load(start_path, allow_pickle=True)
+    data_grid, frequency = load_data(contents[0])
+    data_grid = calibration.calibration(data_path, debug=True, outdir=outdir+"/plots/", filename="debug")
+
+    start_data = np.load(contents[2], allow_pickle=True)
     start_time = start_data[()]
 
     datetime = [start_time] * 1024
@@ -48,6 +52,7 @@ def write_csv(data_path, start_path, outdir="./"):
 
     check_dir(f"{outdir}/{date}/")
     df.to_csv(f"{outdir}/{date}/{date}.csv", index=False)
+    print(f"written to {outdir}/{date}/{date}.csv")
     return 
 
 if __name__ == "__main__":
@@ -57,13 +62,12 @@ if __name__ == "__main__":
     except Exception:
         pass
 
-    outdir = "/home/scratch/dbautist/CHIME_backup/"
+    outdir = "/home/scratch/dbautist/TEST/610/"#"/home/scratch/dbautist/CHIME_backup/"
 
     for date in dirs:
-        if os.path.exists(f"{outdir}/{date}/{date}.csv"):
+        this_day = date.split("/")[-2]
+        if os.path.exists(f"{outdir}/{this_day}/{this_day}.csv"):
             pass
         else:
-            contents = glob.glob(date + "/*npy")
-            contents.sort()
-            write_csv(contents[0], contents[2], outdir=outdir)
-            
+            write_csv(date, outdir=outdir)
+    print(f"Job finished: {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}")        
