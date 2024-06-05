@@ -26,18 +26,25 @@ sd_410 = 13.36 * 1e4  # standard deviation of solar flux at 410 MHz in Jy
 sd_610 = 8.59 * 1e4   # standard deviation of solar flux at 610 MHz in Jy
 
 def gaussian(x, height, center, width, baseline):
-    return height * np.exp( -(x - center)**2 / (2*width)**2) + baseline
+    return height * np.exp( -0.5*(x - center)**2 / (width**2)) + baseline
 
 def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matched_index=1900, outdir=".", filename='test'):
     index = np.argmin(np.abs(target_freq - freq_array))
     lower = max((matched_index - 300, 0))
     upper = min((matched_index + 300, len(data_grid)-1))
     freq_slice = data_grid[lower:upper, index]
+
     # mask rfi in sun 
     mask = np.where(freq_slice < 1e9)
     freq_slice = freq_slice[mask]
     xx = np.linspace(lower, upper, num=len(freq_slice))#np.arange(lower, upper) # may need to be linspace
-    coeff, cov = curve_fit(gaussian, xx, freq_slice, p0=(1e8, matched_index, 10, 1e7))
+    
+    # define guessing parameters
+    bounds = ((0,np.min(xx),3,0), (1e9, np.max(xx), 100, np.inf))
+    p0 = (np.median(freq_slice)*4, matched_index, 100, 1e7)
+
+    # fit gaussian and calibrate based on fit values
+    coeff, cov = curve_fit(gaussian, xx, freq_slice, p0=p0, bounds=bounds)
     height, center, width, baseline = coeff
     counts_to_flux = flux / height
     calibrated_grid = data_grid * counts_to_flux
@@ -55,7 +62,9 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
 
         calibrated_slice = calibrated_grid[lower:upper, index]
         calibrated_slice = calibrated_slice[mask]
-        refit, cov = curve_fit(gaussian, xx,  calibrated_slice, p0=(800000, matched_index, 10, 1e5))
+        bounds = ((0,np.min(xx),3,0), (1e9, np.max(xx), 100, np.inf))
+        p0 = (np.median(calibrated_slice)*4, matched_index, 100, 1e4)
+        refit, cov = curve_fit(gaussian, xx,  calibrated_slice, p0=p0, bounds=bounds)
         
         axs[1].plot(np.arange(lower, upper), calibrated_grid[lower:upper, index], label="calibrated data")
         axs[1].hlines(flux, lower, upper, label="given flux", color="black")
