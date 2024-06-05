@@ -5,6 +5,7 @@ import shutil
 import matplotlib.pyplot as plt
 import numpy as np
 import astropy.units as u
+import calibration
 
 def check_dir(filepath):
     if os.path.exists(filepath):
@@ -29,24 +30,15 @@ def get_date(filepath):
     YYYY_DD = time_UTC.strftime("%Y_%j")
     return YYYY_DD
 
-def plot_waterfall(data_path, start_path, end_path, outdir="./"):
-    CHIME_data = np.load(data_path, allow_pickle=True)
-    start_data = np.load(start_path, allow_pickle=True)
-    end_data = np.load(end_path, allow_pickle=True)
-    start_time = start_data[()].astimezone(timezone.utc)
-    end_time = end_data[()].astimezone(timezone.utc)
-
-    frequency = np.linspace(400e6, 800e6, num=1024)*u.Hz
-    frequency = frequency.to(u.MHz).value
-
-    dt = (end_time - start_time).seconds / CHIME_data.shape[0]
-    timestamps = [start_time + timedelta(seconds=dt*i) for i in range(len(CHIME_data))]
+def plot_waterfall(data_path, outdir="./"):
+    CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
+    start_time = timestamps[0]
+    end_time = timestamps[-1]
 
     time_series = np.sum(CHIME_data, axis=1)
     average_spectrum = np.mean(CHIME_data, axis=0)
 
-    extent = [frequency.min(), frequency.max(), max(timestamps), min(timestamps)]
-
+    extent = [np.round(np.min(frequency)), np.round(np.max(frequency)), max(timestamps), min(timestamps)] 
     fig = plt.figure(figsize=(10,10))
     gs = fig.add_gridspec(2,2, hspace=0.02, wspace=0.03, width_ratios=[3,1], height_ratios=[1,3])
     (ax1, ax2), (ax3, ax4) = gs.subplots(sharex="col", sharey="row")
@@ -91,7 +83,7 @@ def make_waterfalls():
         else:
             contents = glob.glob(date + "/*npy")
             contents.sort()
-            plot_waterfall(contents[0], contents[2], contents[1], outdir=f"{date}/")
+            plot_waterfall(date, outdir=f"{date}")
 
 if __name__ == "__main__":
     move_files()
