@@ -1,17 +1,12 @@
+# if calibration fails due to a TV channel appearing at 
+# 610 MHz, switch down to 410 MHz for calibration
+
 import os
 import numpy as np
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 import glob
 import calibration
-
-def load_data(data_path):
-    CHIME_data = np.load(data_path, allow_pickle=True)
-    
-    df = -0.390625
-    frequency = np.arange(800, 400, df)[::-1]
-
-    return CHIME_data, frequency*1e6
 
 def get_date(filepath):
     """
@@ -35,14 +30,15 @@ def check_dir(filepath):
 
 def write_csv(data_path, outdir="."):
     date = data_path.split("/")[-2]
-    contents = glob.glob(date + "/*npy")
-    contents.sort()
+    data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="Hz")
+    start_time = timestamps[0]
 
-    data_grid, frequency = load_data(contents[0])
-    data_grid = calibration.calibration(data_path, debug=True, outdir=outdir+"/plots/", filename="debug")
-
-    start_data = np.load(contents[2], allow_pickle=True)
-    start_time = start_data[()]
+    data_grid = calibration.calibration(data_path, 
+                                        target_freq=610,
+                                        target_flux=calibration.median_610,
+                                        debug=True, 
+                                        outdir=outdir+"/plots/", 
+                                        filename="debug")
 
     datetime = [start_time] * 1024
     mean_spectrum = np.nanmean(data_grid, axis=0)
