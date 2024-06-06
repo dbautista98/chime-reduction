@@ -41,7 +41,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
     
     # define guessing parameters
     bounds = ((0,np.min(xx),3,0), (1e9, np.max(xx), 100, np.inf))
-    p0 = (np.median(freq_slice)*4, matched_index, 100, 1e7)
+    p0=(1e8, matched_index, 10, 1e7)
 
     # fit gaussian and calibrate based on fit values
     coeff, cov = curve_fit(gaussian, xx, freq_slice, p0=p0, bounds=bounds)
@@ -63,7 +63,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
         calibrated_slice = calibrated_grid[lower:upper, index]
         calibrated_slice = calibrated_slice[mask]
         bounds = ((0,np.min(xx),3,0), (1e9, np.max(xx), 100, np.inf))
-        p0 = (np.median(calibrated_slice)*4, matched_index, 100, 1e4)
+        p0=(800000, matched_index, 10, 1e5)
         refit, cov = curve_fit(gaussian, xx,  calibrated_slice, p0=p0, bounds=bounds)
         
         axs[1].plot(np.arange(lower, upper), calibrated_grid[lower:upper, index], label="calibrated data")
