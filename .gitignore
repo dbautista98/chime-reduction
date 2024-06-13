@@ -1,4 +1,7 @@
 *.npy
-202*/
+202*
 __pycache__/
-*.SRD
+learmonthData/
+sunPosition/
+confluence/ 
+
