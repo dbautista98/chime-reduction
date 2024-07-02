@@ -1,4 +1,4 @@
-# how to transfer CHIME data
+# chime-reduction
 
 The CHIME data transfer method is fully automated with cron jobs now. 
 
@@ -10,7 +10,13 @@ This script runs at 5:15 am each morning and pulls the most recent data from the
 
 It then runs a python script to populate them in their own directories for each date of obervation and generates a waterfall plot to summarize the data. Afterwards it sents me an email with the outputs of make_waterfalls.py
 
-The second job runs on cvpost-master and moves the data to the lustre workspace with the following command:
+A second job runs on prospero and reduces the data with the following command:
+
+    20 5 * * *  cd /users/dbautist/CHIME_landing_directory/ ; source /opt/local/etc/profile.d/conda.sh; conda activate rfi ; python3 gui_reduction.py | mail -s "CHIME data transfer gui reduction" -a /home/scratch/dbautist/TEST/610/plots/debug.png dbautist
+
+This script runs at 5:20 am each morning and reduces the data to a volume that is manageable by the gbt-rfi-gui data ingestion algorithm. 
+
+A third job runs on cvpost-master and moves the data to the lustre workspace with the following command:
 
     30 5 * * *  cd /users/dbautist/CHIME_landing_directory/ ; python3 move_data.py | mail -s "CHIME data transfer to lustre" dbautist
 
