@@ -20,10 +20,10 @@ CHIME_altitude = 59.9129 # degrees: with zenith = 90 and nadir = -90
 CHIME_latitude = 38.433056  # earth latitude  in degrees
 CHIME_longitude= -79.839722 # earth longitude in degrees 
 
-median_410 = 42 * 1e4 # median solar flux at 410 MHz in Jy
-median_610 = 65 * 1e4 # median solar flux at 610 MHz in Jy
-sd_410 = 13.36 * 1e4  # standard deviation of solar flux at 410 MHz in Jy
-sd_610 = 8.59 * 1e4   # standard deviation of solar flux at 610 MHz in Jy
+median_410 = 49 * 1e4 # median solar flux at 410 MHz in Jy
+median_610 = 75 * 1e4 # median solar flux at 610 MHz in Jy
+sd_410 = 8.88 * 1e4  # standard deviation of solar flux at 410 MHz in Jy
+sd_610 = 10.11 * 1e4   # standard deviation of solar flux at 610 MHz in Jy
 
 def gaussian(x, height, center, width, baseline):
     return height * np.exp( -0.5*(x - center)**2 / (width**2)) + baseline
