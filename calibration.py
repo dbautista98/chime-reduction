@@ -213,7 +213,7 @@ def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
     az =  sun.transform_to(altaz).az.deg
     return alt, az
 
-def calibration(chime_path, target_freq=610, target_flux=65 * 1e4, debug=False, outdir='.', filename='test'):
+def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, outdir='.', filename='test'):
     date = chime_path.split("/")[-2]
     try:
         sun_df = pd.read_csv(f"/users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv")
