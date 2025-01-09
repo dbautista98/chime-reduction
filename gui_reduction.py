@@ -34,8 +34,8 @@ def write_csv(data_path, outdir="."):
     start_time = timestamps[0]
 
     data_grid = calibration.calibration(data_path, 
-                                        target_freq=610,
-                                        target_flux=calibration.median_610,
+                                        target_freq=410,
+                                        target_flux=calibration.median_410,
                                         debug=True, 
                                         outdir=outdir+"/plots/", 
                                         filename="debug")
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     except Exception:
         pass
 
-    outdir = "/home/scratch/dbautist/TEST/610/"#"/home/scratch/dbautist/CHIME_backup/"
+    outdir = "/home/scratch/dbautist/TEST/410/"#"/home/scratch/dbautist/CHIME_backup/"
 
     for date in dirs:
         this_day = date.split("/")[-2]
