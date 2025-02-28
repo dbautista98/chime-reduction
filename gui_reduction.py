@@ -28,7 +28,7 @@ def check_dir(filepath):
         os.mkdir(filepath)
         return
 
-def write_csv(data_path, outdir="."):
+def write_csv(data_path, outdir=".", log=False, logdir="."):
     date = data_path.split("/")[-2]
     data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="Hz")
     start_time = timestamps[0]
@@ -38,7 +38,9 @@ def write_csv(data_path, outdir="."):
                                         target_flux=calibration.median_410,
                                         debug=True, 
                                         outdir=outdir+"/plots/", 
-                                        filename="debug")
+                                        filename="debug",
+                                        log=log,
+                                        logdir=logdir)
 
     datetime = [start_time] * 1024
     mean_spectrum = np.nanmean(data_grid, axis=0)
@@ -65,5 +67,5 @@ if __name__ == "__main__":
         if os.path.exists(f"{outdir}/{this_day}/{this_day}.csv"):
             pass
         else:
-            write_csv(date, outdir=outdir)
+            write_csv(date, outdir=outdir, log=True)
     print(f"Job finished: {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}")        

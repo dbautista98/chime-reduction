@@ -80,7 +80,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
         plt.close()
     ## ======================= END DEBUG =======================
 
-    return calibrated_grid
+    return calibrated_grid, coeff
 
 def load_CHIME_data(data_dir, unit="MHz"):
     files = glob.glob(f"{data_dir}/*npy")
@@ -213,7 +213,7 @@ def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
     az =  sun.transform_to(altaz).az.deg
     return alt, az
 
-def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, outdir='.', filename='test'):
+def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, outdir='.', filename='test', log=False, logdir="."):
     date = chime_path.split("/")[-2]
     try:
         sun_df = pd.read_csv(f"/users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv")
@@ -230,13 +230,34 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
 
     sun_projection_on_chime = np.dot(sun_vector, chime_vector)
 
-    calibrated_grid = gauss_fit_peak(data_grid, 
-                                     frequency, 
-                                     target_freq, 
-                                     target_flux * sun_projection_on_chime, 
-                                     matched_index=matched_index, 
-                                     debug=debug,
-                                     outdir=outdir,
-                                     filename=filename)
+    print(f"calibrating", date)
+    try:
+        calibrated_grid, coeff = gauss_fit_peak(data_grid, 
+                                        frequency, 
+                                        target_freq, 
+                                        target_flux * sun_projection_on_chime, 
+                                        matched_index=matched_index, 
+                                        debug=debug,
+                                        outdir=outdir,
+                                        filename=filename)
+        success = True
+    except:
+        coeff = -9999, -9999, -9999, -9999
+        success = False
+        calibrated_grid = data_grid
     
+    if log:
+        filename = "calibration_log.csv"
+        outpath = f"{logdir}/{filename}"
+        height, center, width, baseline = coeff
+        if not os.path.exists(outpath):
+            header = "date,target_freq,target_flux,height,center,width,baseline,sun_projection,fit_success"
+            header = header + "\n"
+            with open(outpath, "w") as f:
+                f.write(header)
+        logger_line = f"{date},{target_freq},{target_flux},{height},{center},{width},{baseline},{sun_projection_on_chime},{success}"
+        logger_line = logger_line + "\n"
+        with open(outpath, "a") as f:
+            f.write(logger_line)
+
     return calibrated_grid
