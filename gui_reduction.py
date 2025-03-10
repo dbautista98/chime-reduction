@@ -30,7 +30,7 @@ def check_dir(filepath):
 
 def write_csv(data_path, outdir=".", log=False, logdir="."):
     date = data_path.split("/")[-2]
-    data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="Hz")
+    data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="MHz")
     start_time = timestamps[0]
 
     data_grid = calibration.calibration(data_path, 
