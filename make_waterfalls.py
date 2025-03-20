@@ -30,7 +30,7 @@ def get_date(filepath):
     YYYY_DD = time_UTC.strftime("%Y_%j")
     return YYYY_DD
 
-def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False):
+def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time_zone=None):
     CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
     if calibrated:
         unit = "Jy"
@@ -51,13 +51,13 @@ def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False):
     fig = plt.figure(figsize=(10,10))
     gs = fig.add_gridspec(2,2, hspace=0.02, wspace=0.03, width_ratios=[3,1], height_ratios=[1,3])
     (ax1, ax2), (ax3, ax4) = gs.subplots(sharex="col", sharey="row")
-    ax1.set_title(f"GBO CHIME outrigger data\n{start_time.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')} to {end_time.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}")
+    ax1.set_title(f"GBO CHIME outrigger data\n{start_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')} to {end_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')}")
     ax1.semilogy(frequency, average_spectrum, color="black", linewidth=1)
     ax1.set_ylabel(f"average power [{unit}]")
     ax2.set_visible(not ax2)
     ax3.imshow(CHIME_data, aspect="auto", extent=extent, vmin=vmin, vmax=vmax)
     ax3.set_xlabel("Frequency [MHz]")
-    ax3.set_ylabel("UTC time (mm-dd hh)")
+    ax3.set_ylabel(f"{start_time.astimezone(time_zone).strftime('%Z')} time (mm-dd hh)")
     ax4.plot(time_series, timestamps, color="black", linewidth=1)
     ax4.set_xlabel(f"integrated power\n[{unit}]")
     plt.savefig(f"{outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}", bbox_inches="tight", transparent=False)
@@ -79,7 +79,7 @@ def move_files():
             print(f"moved {file} to {data_dir}{this_date}/{file}")
             shutil.move(file, data_dir + this_date + "/" + file)
 
-def make_waterfalls(outtype='png', calibrated=False):
+def make_waterfalls(outtype='png', calibrated=False, time_zone=None):
     dirs = glob.glob("*_*/")
     try:
         dirs.remove("__pycache__/")
@@ -92,11 +92,13 @@ def make_waterfalls(outtype='png', calibrated=False):
         else:
             contents = glob.glob(date + "/*npy")
             contents.sort()
-            plot_waterfall(date, outdir=f"{date}", outtype=outtype, calibrated=calibrated)
+            plot_waterfall(date, outdir=f"{date}", outtype=outtype, calibrated=calibrated, time_zone=time_zone)
 
 if __name__ == "__main__":
     outtype = "png"
     calibrated = False
+    time_zone = timezone.utc
+
     move_files()
-    make_waterfalls(outtype=outtype, calibrated=calibrated)
+    make_waterfalls(outtype=outtype, calibrated=calibrated, time_zone=time_zone)
     print(f"Job finished: {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}")
