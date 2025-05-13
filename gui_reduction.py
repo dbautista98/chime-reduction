@@ -33,6 +33,9 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="MHz")
     start_time = timestamps[0]
 
+    if log:
+        check_dir(outdir+"/plots/")
+
     data_grid = calibration.calibration(data_path, 
                                         target_freq=410,
                                         target_flux=calibration.median_410,
