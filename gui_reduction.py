@@ -3,7 +3,7 @@
 
 import os
 import numpy as np
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 import pandas as pd
 import glob
 import calibration
@@ -45,10 +45,19 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
                                         log=log,
                                         logdir=logdir)
 
-    datetime = [start_time] * 1024
+    obs_time = start_time.strftime("%Y-%m-%dT%H:%M:%S%:z")
     mean_spectrum = np.nanmean(data_grid, axis=0)
+    scan_name = start_time.strftime("%Y-%m-%d")
 
-    data_dict = {"datetime":datetime, "intensity":mean_spectrum, "frequency":frequency}
+    data_dict = {"instrument":"chime_gbo",
+                 "receiver":"chime",
+                 "polarization":"I",
+                 "intensity_unit":"Jy",
+                 "scan_name":scan_name,
+                 "scan_datetime":obs_time, 
+                 "frequency":frequency,
+                 "intensity":mean_spectrum
+                 }
     df = pd.DataFrame(data_dict)
 
     check_dir(f"{outdir}/{date}/")
