@@ -1,4 +1,4 @@
-# this script will be to look up the freuency ranges
+# this script will be to look up the frequency ranges
 # of the UHF TV channels from https://en.wikipedia.org/wiki/Pan-American_television_frequencies
 
 import matplotlib.pyplot as plt
@@ -98,12 +98,12 @@ def channel_lookup(freq, unit="MHz"):
             return chan
     raise Exception("frequency is on boundary of channels")
 
-def plot_channel(channel_number, color="tab:orange", opacity=0.25):
+def plot_channel(ax, channel_number, color="tab:orange", opacity=0.25):
     """
     This function will overlay a shaded region on an existing
-    plot and annotate it with the chnanel number 
+    plot and annotate it with the channel number 
     """
-    plt.axvspan(channel_dict[channel_number]["lower"], 
+    ax.axvspan(channel_dict[channel_number]["lower"], 
                 channel_dict[channel_number]["upper"], 
                 alpha=opacity, 
                 color=color, 
