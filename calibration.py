@@ -144,7 +144,7 @@ def angular_separation(az1, el1, az2, el2, deg=True):
         az2 = az2 * np.pi/180
         el2 = el2 * np.pi/180
     cos_a = np.sin(el1)*np.sin(el2) + np.cos(el1)*np.cos(el2)*np.cos(az1 - az2)
-    a = np.arccos(cos_a)
+    a = np.abs(np.arccos(cos_a))
     return a
 
 def match_times(min_separation_time, timestamps, timezone=-4):
