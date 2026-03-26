@@ -46,7 +46,7 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
                                         logdir=logdir)
 
     obs_time = start_time.strftime("%Y-%m-%dT%H:%M:%S%:z")
-    mean_spectrum = np.nanmean(data_grid, axis=0)
+    mean_spectrum = np.round(np.nanmean(data_grid, axis=0), decimals=3)
     scan_name = start_time.strftime("%Y-%m-%d")
 
     data_dict = {"instrument":"chime_gbo",
