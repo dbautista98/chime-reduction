@@ -16,7 +16,7 @@ A second job runs on prospero and reduces the data with the following command:
 
 This script runs at 5:20 am each morning and reduces the data to a volume that is manageable by the gbt-rfi-gui data ingestion algorithm. 
 
-A third job runs on cvpost-master and moves the data to the lustre workspace with the following command:
+A third job runs on `cvpost-master-2` and moves the data to the lustre workspace with the following command:
 
     30 5 * * *  cd /users/dbautist/CHIME_landing_directory/ ; python3 move_data.py | mail -s "CHIME data transfer to lustre" dbautist
 
