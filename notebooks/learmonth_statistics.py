@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from calibration import *
+from chime.calibration import *
 import pandas as pd
 from tqdm import trange
 import os
