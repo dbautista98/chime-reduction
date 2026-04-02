@@ -5,12 +5,12 @@ import pandas as pd
 from tqdm import trange
 import os
 
-outdir = "/users/dbautist/CHIME_landing_directory/learmonthData/summary_plots/"
-data_dir = "/home/scratch/dbautist/learmonth_data/"
+outdir = "/home/scratch/dbautist/CHIME_landing_directory/plots/" # "/users/dbautist/CHIME_landing_directory/learmonthData/summary_plots/"
+data_dir = "/home/scratch/dbautist/CHIME_landing_directory/learmonthData/"
 summary_path = f"{outdir}/summary_fluxes.csv"
 
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-years = ['24', '25']
+years = ['24', '25', '26']
 month_dict = {}
 for year in years:
     for month in months:
