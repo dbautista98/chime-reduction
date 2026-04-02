@@ -14,8 +14,8 @@ def check_dir(filepath):
         os.mkdir(filepath)
         return
 
-def already_exists(filepath):
-    return os.path.exists(filepath)
+# def already_exists(filepath):
+#     return os.path.exists(filepath)
 
 def get_date(filepath):
     """
@@ -64,41 +64,47 @@ def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time
     print(f"saved plot to: {outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}")
     plt.close()
 
-def move_files():
-    all_files = glob.glob("*npy")
+def move_files(data_dir, outdir):
+    print(f"searching for .npy files in {data_dir}")
+    all_files = glob.glob(f"{data_dir}/*npy")
     if len(all_files) == 0:
         print("ERROR:: no data found")
-    data_dir = "/users/dbautist/CHIME_landing_directory/"
 
     for file in all_files:
         this_date = get_date(file)
-        check_dir(data_dir + this_date)
-        if already_exists(data_dir + this_date + "/" + file):
+        topdir = outdir + "/" + this_date
+        check_dir(topdir)
+        outpath = topdir + "/" + os.path.basename(file)
+        if os.path.exists(outpath):
             os.remove(file)
         else:
-            print(f"moved {file} to {data_dir}{this_date}/{file}")
-            shutil.move(file, data_dir + this_date + "/" + file)
+            print(f"moved {file} to {outpath}")
+            shutil.move(file, outpath)
 
-def make_waterfalls(outtype='png', calibrated=False, time_zone=None):
-    dirs = glob.glob("*_*/")
+def make_waterfalls(outdir, outtype='png', calibrated=False, time_zone=None):
+    dirs = glob.glob(f"{outdir}/202*/")
     try:
         dirs.remove("__pycache__/")
     except Exception:
         pass
 
-    for date in dirs:
-        if os.path.exists(f"{date}/{date.replace('/', '')}_waterfall.{outtype}"):
+    for dir in dirs:
+        date = dir.split("/")[-2]
+        if os.path.exists(f"{outdir}/{date}/{date.replace('/', '')}_waterfall.{outtype}"):
             pass
         else:
-            contents = glob.glob(date + "/*npy")
+            contents = glob.glob(dir + "/*npy")
             contents.sort()
-            plot_waterfall(date, outdir=f"{date}", outtype=outtype, calibrated=calibrated, time_zone=time_zone)
+            plot_waterfall(dir, outdir=f"{outdir}/{date}", outtype=outtype, calibrated=calibrated, time_zone=time_zone)
 
 if __name__ == "__main__":
     outtype = "png"
     calibrated = False
     time_zone = timezone.utc
 
-    move_files()
-    make_waterfalls(outtype=outtype, calibrated=calibrated, time_zone=time_zone)
+    data_dir = os.getcwd()
+    outdir = os.getcwd()
+
+    move_files(data_dir, outdir)
+    make_waterfalls(outdir, outtype=outtype, calibrated=calibrated, time_zone=time_zone)
     print(f"Job finished: {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}")
