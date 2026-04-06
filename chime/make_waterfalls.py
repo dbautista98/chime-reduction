@@ -5,30 +5,10 @@ import shutil
 import matplotlib.pyplot as plt
 import numpy as np
 import astropy.units as u
+
+# CHIME package imports
 import calibration
-
-def check_dir(filepath):
-    if os.path.exists(filepath):
-        return
-    else:
-        os.mkdir(filepath)
-        return
-
-# def already_exists(filepath):
-#     return os.path.exists(filepath)
-
-def get_date(filepath):
-    """
-    The filepath of the .npy files have the
-    timestamps recorded in UTC, whereas the 
-    timestamps inside the file are converted 
-    to ET and need to be moved back to UTC
-    """
-    filename = os.path.basename(filepath)
-    start_date = filename.split("_")[2]
-    time_UTC  = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
-    YYYY_DD = time_UTC.strftime("%Y_%j")
-    return YYYY_DD
+import util
 
 def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time_zone=None):
     CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
@@ -71,9 +51,9 @@ def move_files(data_dir, outdir):
         print("ERROR:: no data found")
 
     for file in all_files:
-        this_date = get_date(file)
+        this_date = util.get_date(file)
         topdir = outdir + "/" + this_date
-        check_dir(topdir)
+        util.check_dir(topdir)
         outpath = topdir + "/" + os.path.basename(file)
         if os.path.exists(outpath):
             os.remove(file)

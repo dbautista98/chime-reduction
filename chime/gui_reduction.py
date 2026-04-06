@@ -6,27 +6,10 @@ import numpy as np
 from datetime import datetime
 import pandas as pd
 import glob
+
+# CHIME package imports
 import calibration
-
-def get_date(filepath):
-    """
-    The filepath of the .npy files have the
-    timestamps recorded in UTC, whereas the 
-    timestamps inside the file are converted 
-    to ET and need to be moved back to UTC
-    """
-    filename = os.path.basename(filepath)
-    start_date = filename.split("_")[2]
-    time_UTC  = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
-    YYYY_DD = time_UTC.strftime("%Y_%j")
-    return YYYY_DD
-
-def check_dir(filepath):
-    if os.path.exists(filepath):
-        return
-    else:
-        os.mkdir(filepath)
-        return
+import util
 
 def write_csv(data_path, outdir=".", log=False, logdir="."):
     date = data_path.split("/")[-2]
@@ -34,7 +17,7 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     start_time = timestamps[0]
 
     if log:
-        check_dir(outdir+"/plots/")
+        util.check_dir(outdir+"/plots/")
 
     data_grid = calibration.calibration(data_path, 
                                         target_freq=410,
@@ -60,7 +43,7 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
                  }
     df = pd.DataFrame(data_dict)
 
-    check_dir(f"{outdir}/{date}/")
+    util.check_dir(f"{outdir}/{date}/")
     df.to_csv(f"{outdir}/{date}/{date}.csv", index=False)
     print(f"written to {outdir}/{date}/{date}.csv")
     return 
