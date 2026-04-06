@@ -6,6 +6,7 @@ import numpy as np
 from datetime import datetime
 import pandas as pd
 import glob
+import argparse
 
 # CHIME package imports
 import calibration
@@ -49,18 +50,26 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     return 
 
 if __name__ == "__main__":
-    dirs = glob.glob("*_*/")
+    parser = argparse.ArgumentParser(description="a script to calibrate a day of CHIME data and average it down to a single spectrum")
+    parser.add_argument("-indir", "-i", help="directory input data lives", default=os.getcwd())
+    parser.add_argument("-outdir", "-o", help="directory where output data goes", default=os.getcwd())
+    parser.add_argument("-noplot", "-n", help="specify not to generate diagnostic plot", default=True, action="store_false")
+    args = parser.parse_args()
+
+    data_dir = args.indir
+    outdir = args.outdir
+    util.check_dir(outdir)
+
+    dirs = glob.glob(f"{data_dir}/202*_*/")
     try:
         dirs.remove("__pycache__/")
     except Exception:
         pass
-
-    outdir = "/home/scratch/dbautist/TEST/410/"#"/home/scratch/dbautist/CHIME_backup/"
 
     for date in dirs:
         this_day = date.split("/")[-2]
         if os.path.exists(f"{outdir}/{this_day}/{this_day}.csv"):
             pass
         else:
-            write_csv(date, outdir=outdir, log=True)
+            write_csv(date, outdir=outdir, log=args.noplot)
     print(f"Job finished: {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}")        
