@@ -12,6 +12,8 @@ from astropy.time import Time
 from datetime import datetime, timezone, timedelta
 from scipy.optimize import curve_fit
 
+# TODO:
+# - remove hardcoded filepaths from calibration function
 
 #### CHIME definitions
 CHIME_azimuth  = 305.3 # degrees
