@@ -20,3 +20,8 @@ def get_date(filepath):
     time_UTC  = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
     YYYY_DD = time_UTC.strftime("%Y_%j")
     return YYYY_DD
+
+def yyyy_ddd_to_Y_m_d(YYYY_DDD):
+    datetime_obj = datetime.strptime(YYYY_DDD, "%Y_%j")
+    standard_date = datetime_obj.strftime("%Y-%m-%d")
+    return standard_date
