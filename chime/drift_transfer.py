@@ -52,7 +52,7 @@ def update_transfer_log(output_directory, data_destination, log_file_dir='./'):
 
     # check if log file exists
     if not os.path.exists(outfile):
-        header = "data_date-yyyy_ddd,data_date-YMD,transfer_date,transfer_location,success\n"
+        header = "date,data_date-YMD,transfer_date,transfer_location,success\n"
         with open(outfile, "w") as f:
             f.write(header)
 

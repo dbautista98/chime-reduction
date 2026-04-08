@@ -253,7 +253,7 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
         outpath = f"{logdir}/{filename}"
         height, center, width, baseline = coeff
         if not os.path.exists(outpath):
-            header = "date,target_freq,target_flux,height,center,width,baseline,sun_projection,fit_success"
+            header = "date,target_freq,target_flux,height,center,width,baseline,sun_projection,success"
             header = header + "\n"
             with open(outpath, "w") as f:
                 f.write(header)
