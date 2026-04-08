@@ -53,11 +53,29 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     print(f"written to {outdir}/{date}/{date}.csv")
     return 
 
+def check_log_exits(log_path, date):
+    if not log_path:
+        return False
+    else:
+        df = pd.read_csv(log_path)
+        # check if this day has been processed at all
+        if date not in list(set(df["date"])):
+            return False
+
+        # check if any of these dates have been processed successfully
+        df = df[df["date"] == date]
+        success = np.any(df['success'] == True)
+        if success:
+            return True
+        else:
+            return False
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="a script to calibrate a day of CHIME data and average it down to a single spectrum")
     parser.add_argument("-indir", "-i", help="directory input data lives", default=os.getcwd())
     parser.add_argument("-outdir", "-o", help="directory where output data goes", default=os.getcwd())
     parser.add_argument("-noplot", "-n", help="specify not to generate diagnostic plot", default=True, action="store_false")
+    parser.add_argument("-logfile", "-l", help="specify log file path to check if this file has been reduced before", default=False)
     args = parser.parse_args()
 
     data_dir = args.indir
@@ -72,7 +90,8 @@ if __name__ == "__main__":
 
     for date in dirs:
         this_day = date.split("/")[-2]
-        if os.path.exists(f"{outdir}/{this_day}/{this_day}.csv"):
+        # check if the file has already been reduced 
+        if check_log_exits(args.logfile, this_day):
             pass
         else:
             write_csv(date, outdir=outdir, log=args.noplot)
