@@ -8,7 +8,7 @@ try:
 except:
     import util
 
-DEVELOPMENT = True
+DEVELOPMENT = False
 testing = True
 
 def get_dates(target_directory):
@@ -46,7 +46,7 @@ def move_data(input_directory, output_directory, move_method="cp", development=T
     return 
 
 def update_transfer_log(output_directory, data_destination, log_file_dir='./'):
-    log_file_name = "drift_transfer_log.csv"
+    log_file_name = "drift_transfer.log"
     outfile = f"{log_file_dir}/{log_file_name}"
     today = datetime.today().strftime('%Y-%m-%d')
 
@@ -79,7 +79,7 @@ def drift_transfer_driver(host_name):
 
     if host_name in production:
         input_directory = "/users/dbautist/CHIME_landing_directory/csvStaging/"
-        output_directory = "/users/dbautist/CHIME_landing_directory/temp_transfer_dir/" #"/home/drift-upload-test/"
+        output_directory = "/home/drift-upload-test/"
         move_method = "mv"
         move_data(input_directory, output_directory, move_method, development=DEVELOPMENT)
 
@@ -94,7 +94,7 @@ def drift_transfer_driver(host_name):
 
     elif host_name in test:
         input_directory = "/users/dbautist/CHIME_landing_directory/csvStaging/"
-        output_directory= "/home/scratch/dbautist/TEST/new_reduction/"
+        output_directory= "/home/scratch/dbautist/TEST/should_be_empty/"
         move_method = "cp"
         move_data(input_directory, output_directory, move_method, development=(not test))
         return True
@@ -107,6 +107,7 @@ def drift_transfer_driver(host_name):
 
 
 if __name__ == "__main__":
+    print()
     print("starting DRIFT transfer")
 
     host_device = socket.gethostname()
