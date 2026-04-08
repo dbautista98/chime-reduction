@@ -3,7 +3,10 @@ import socket
 from datetime import datetime
 
 # CHIME package imports
-from . import util
+try:
+    from . import util
+except:
+    import util
 
 DEVELOPMENT = True
 testing = True

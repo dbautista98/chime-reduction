@@ -4,7 +4,10 @@ import os
 from datetime import datetime
 
 # CHIME package imports
-from . import util
+try:
+    from . import util
+except:
+    import util
 
 def move_data():
     all_dirs = glob.glob("202*_*/")

@@ -9,8 +9,12 @@ import glob
 import argparse
 
 # CHIME package imports
-from . import calibration
-from . import util
+try:
+    from . import calibration
+    from . import util
+except:
+    import calibration
+    import util
 
 def write_csv(data_path, outdir=".", log=False, logdir="."):
     date = data_path.split("/")[-2]

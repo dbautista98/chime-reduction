@@ -7,8 +7,12 @@ import numpy as np
 import astropy.units as u
 
 # CHIME package imports
-from . import calibration
-from . import util
+try:
+    from . import calibration
+    from . import util
+except:
+    import calibration
+    import util
 
 def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time_zone=None):
     CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
