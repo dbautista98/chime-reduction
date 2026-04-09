@@ -27,7 +27,7 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     data_grid = calibration.calibration(data_path, 
                                         target_freq=410,
                                         target_flux=calibration.median_410,
-                                        debug=True, 
+                                        debug=log, 
                                         outdir=outdir+"/plots/", 
                                         filename="debug",
                                         log=log,
