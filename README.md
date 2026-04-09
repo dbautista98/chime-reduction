@@ -1,5 +1,7 @@
 # chime-reduction
 
+## TODO: update to reflect new packaging and process
+
 The CHIME data transfer method is fully automated with cron jobs now. 
 
 One job runs on prospero and pulls the data from the remote sftp server with the following command:
