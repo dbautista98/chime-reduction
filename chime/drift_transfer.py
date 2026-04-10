@@ -79,16 +79,19 @@ def drift_transfer_driver(host_name):
 
     if host_name in production:
         input_directory = "/users/dbautist/CHIME_landing_directory/csvStaging/"
-        output_directory = "/home/drift-upload-test/"
-        move_method = "mv"
-        move_data(input_directory, output_directory, move_method, development=DEVELOPMENT)
+        output_directory_TEST = "/home/drift-upload-test/"
+        output_directory_PROD = "/home/drift-upload/"
+        move_method = "cp"
+        move_data(input_directory, output_directory_TEST, move_method, development=DEVELOPMENT)
+        move_data(input_directory, output_directory_PROD, move_method, development=DEVELOPMENT)
 
         if not DEVELOPMENT:
             # remove the empty temp directories from staging 
             temp_directories = get_dates(input_directory)
             for dir in temp_directories:
                 print(f"removing {input_directory}/{dir}")
-                os.rmdir(f"{input_directory}/{dir}")
+                # os.rmdir(f"{input_directory}/{dir}") # the directories are no longer empty with just a copy command 
+                os.system(f"rm -rf {input_directory}/{dir}") # this will be reverted back once deployed only on production 
 
         return True
 
