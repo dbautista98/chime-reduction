@@ -243,10 +243,16 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
                                         outdir=outdir,
                                         filename=filename)
         success = True
-    except:
-        coeff = -9999, -9999, -9999, -9999
-        success = False
-        calibrated_grid = data_grid
+    except RuntimeError as e:
+        if str(e) == "Optimal parameters not found: The maximum number of function evaluations is exceeded.":
+            print("failed to fit a gaussian to data. Filling log with bogus values")
+            coeff = -9999, -9999, -9999, -9999
+            success = False
+            calibrated_grid = data_grid
+        else:
+            raise
+    else:
+        raise 
     
     if log:
         filename = "calibration_log.csv"
