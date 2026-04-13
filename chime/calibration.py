@@ -250,8 +250,11 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
             success = False
             calibrated_grid = data_grid
         else:
+            print("There was another RunTimeError:")
+            print(e)
             raise
-    else:
+    except Exception as err:
+        print(err)
         raise 
     
     if log:
