@@ -8,6 +8,11 @@ try:
 except:
     import util
 
+# TODO:
+#  - somewhere in here, the logging to drift_transfer.log is writing the 
+#    data too many times. It appears to be writing all files for each
+#    file in the staging area
+
 DEVELOPMENT = False
 testing = True
 
