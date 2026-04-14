@@ -1,16 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from calibration import *
+from chime.calibration import *
 import pandas as pd
 from tqdm import trange
 import os
 
-outdir = "/users/dbautist/CHIME_landing_directory/learmonthData/summary_plots/"
-data_dir = "/home/scratch/dbautist/learmonth_data/"
+outdir = "/home/scratch/dbautist/CHIME_landing_directory/plots/" # "/users/dbautist/CHIME_landing_directory/learmonthData/summary_plots/"
+data_dir = "/home/scratch/dbautist/CHIME_landing_directory/learmonthData/"
 summary_path = f"{outdir}/summary_fluxes.csv"
 
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-years = ['24', '25']
+years = ['24', '25', '26']
 month_dict = {}
 for year in years:
     for month in months:
@@ -75,10 +75,13 @@ else:
 print("data quality check")
 print("good:", len(summary_df[summary_df["good_data"] == True]), "bad:", len(summary_df[summary_df["good_data"] == False]))
 
+summary_df[summary_df["good_data"] == True].to_csv(f"{outdir}/good_data.csv", index=False)
+summary_df[summary_df["good_data"] == False].to_csv(f"{outdir}/bad_data.csv", index=False)
+
 good_flux_df = summary_df[summary_df["good_data"] == True]
 
-plt.figure()
-plt.scatter(good_flux_df["date"], good_flux_df["flux_410"], s=1)
+plt.figure(figsize=(10, 6))
+plt.scatter(good_flux_df["date"], good_flux_df["flux_410"], s=5)
 plt.ylim(10, 150)
 plt.grid()
 plt.title("Learmonth median solar flux at 410 MHz")
@@ -86,8 +89,8 @@ plt.ylabel("Flux [SFU]")
 plt.savefig(f"{outdir}/410.png", bbox_inches="tight", transparent=False)
 plt.close()
 
-plt.figure()
-plt.scatter(good_flux_df["date"], good_flux_df["flux_610"], s=1)
+plt.figure(figsize=(10, 6))
+plt.scatter(good_flux_df["date"], good_flux_df["flux_610"], s=5)
 plt.ylim(10, 150)
 plt.grid()
 plt.title("Learmonth median solar flux at 610 MHz")

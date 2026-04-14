@@ -1,4 +1,4 @@
-name: rfi
+name: chime-dev
 channels:
   - conda-forge
   - defaults
@@ -60,6 +60,7 @@ dependencies:
   - zipp=3.17.0=pyhd8ed1ab_0
   - zlib=1.2.13=h5eee18b_0
   - pip:
+    - argparse==1.4.0
     - astropy==6.0.0
     - astropy-iers-data==0.2024.1.15.0.30.14
     - contourpy==1.2.0
@@ -83,4 +84,3 @@ dependencies:
     - tqdm==4.66.1
     - tzdata==2024.1
     - wget==3.2
-prefix: /users/dbautist/.conda/envs/rfi

@@ -12,6 +12,8 @@ from astropy.time import Time
 from datetime import datetime, timezone, timedelta
 from scipy.optimize import curve_fit
 
+# TODO:
+# - remove hardcoded filepaths from calibration function
 
 #### CHIME definitions
 CHIME_azimuth  = 305.3 # degrees
@@ -241,17 +243,26 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
                                         outdir=outdir,
                                         filename=filename)
         success = True
-    except:
-        coeff = -9999, -9999, -9999, -9999
-        success = False
-        calibrated_grid = data_grid
+    except RuntimeError as e:
+        if str(e) == "Optimal parameters not found: The maximum number of function evaluations is exceeded.":
+            print("failed to fit a gaussian to data. Filling log with bogus values")
+            coeff = -9999, -9999, -9999, -9999
+            success = False
+            calibrated_grid = data_grid
+        else:
+            print("There was another RunTimeError:")
+            print(e)
+            raise
+    except Exception as err:
+        print(err)
+        raise 
     
     if log:
         filename = "calibration_log.csv"
         outpath = f"{logdir}/{filename}"
         height, center, width, baseline = coeff
         if not os.path.exists(outpath):
-            header = "date,target_freq,target_flux,height,center,width,baseline,sun_projection,fit_success"
+            header = "date,target_freq,target_flux,height,center,width,baseline,sun_projection,success"
             header = header + "\n"
             with open(outpath, "w") as f:
                 f.write(header)

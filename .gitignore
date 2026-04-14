@@ -5,3 +5,6 @@ learmonthData/
 sunPosition/
 confluence/ 
 calibration_log.csv
+chime.egg-info
+plots/
+*.log

@@ -28,10 +28,13 @@ if __name__ == "__main__":
     else:
         quiet = ""
 
-    datetime_obj = datetime.strptime(f"{args.year}/{args.month}/{args.day}", format_str)
-    query_date = datetime_obj.strftime("%y%m%d")
-    query_year = datetime_obj.strftime("%Y")
+    try:
+        datetime_obj = datetime.strptime(f"{args.year}/{args.month}/{args.day}", format_str)
+        query_date = datetime_obj.strftime("%y%m%d")
+        query_year = datetime_obj.strftime("%Y")
 
-    query_URL = f"https://www.sws.bom.gov.au/Category/World%20Data%20Centre/Data%20Display%20and%20Download/Solar%20Radio/station/learmonth/SRD/{query_year}/L{query_date}.SRD"
-    
-    os.system(f"wget {quiet} -P {args.outdir} {query_URL}")
+        query_URL = f"https://www.sws.bom.gov.au/Category/World%20Data%20Centre/Data%20Display%20and%20Download/Solar%20Radio/station/learmonth/SRD/{query_year}/L{query_date}.SRD"
+        
+        os.system(f"wget {quiet} -P {args.outdir} {query_URL}")
+    except:
+        print("something went wrong")
