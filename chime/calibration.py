@@ -220,8 +220,8 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
     try:
         sun_df = pd.read_csv(f"/users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv")
     except:
-        solution = "please run: python3 /users/dbautist/CHIME_landing_directory/get_sun_position.py --help"
-        raise Exception(f"file not found: /users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv\n{solution}")
+        solution = "please run: python3 /users/dbautist/CHIME_landing_directory/chime/get_sun_position.py --help"
+        raise Exception(f"file not found: /users/dbautist/CHIME_landing_directory/chime/sunPosition/{date}_CHIME.csv\n{solution}")
     data_grid, frequency, timestamps = load_CHIME_data(chime_path)
 
     matched_index = get_closest_position(sun_df, timestamps)
