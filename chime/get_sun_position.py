@@ -72,7 +72,7 @@ def get_alt_az(data, time_zone=-4):
 
     return df
 
-def get_sun_position(day, month, year, latitude=38.43, longitude=-79.83, time_zone=-4, filename="default", save=False, outdir="."):
+def get_sun_position(day, month, year, latitude=38.43, longitude=-79.83, time_zone=-4, filename="default", save=True, outdir="."):
     if filename == "default":
         filename = default_filename(day, month, year)
     
