@@ -54,7 +54,7 @@ def get_title_info(data):
 
     return filename, date, lat_degrees, lon_degrees
 
-def get_alt_az(data):
+def get_alt_az(data, time_zone=-4):
     times = []
     altitude = []
     azimuth = []
@@ -67,7 +67,7 @@ def get_alt_az(data):
         azimuth.append(float(one_row[2].replace("<td>", "").replace("</td>", "")[:-1]))
         times.append(one_row[0].replace("<td>", "").replace("</td>", ""))
 
-    data_dict = {"time":times, "altitude":altitude, "azimuth":azimuth}
+    data_dict = {"time":times, "time_zone":time_zone, "altitude":altitude, "azimuth":azimuth}
     df = pd.DataFrame(data_dict)
 
     return df
@@ -79,7 +79,7 @@ def get_sun_position(day, month, year, latitude=38.43, longitude=-79.83, time_zo
     data = query_website(day=day, month=month, year=year, latitude=latitude, longitude=longitude, time_zone=time_zone, filename=filename)
 
     filename, date, lat_degrees, lon_degrees = get_title_info(data)
-    df = get_alt_az(data)
+    df = get_alt_az(data, time_zone=time_zone)
 
     df["date"] = date
     df["latitude_degrees"] = lat_degrees
