@@ -204,8 +204,8 @@ def reduce_learmonth_data(df, tolerance=10, key="410"):
     return sun_track
 
 def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
-    loc = coord.EarthLocation(lat=lat * u.deg,
-                              lon=lon * u.deg)
+    loc = coord.EarthLocation(lat=lat * unit,
+                              lon=lon * unit)
     
     t = Time(timestamp, scale="utc")
     altaz = coord.AltAz(location=loc, obstime=t)
