@@ -197,12 +197,6 @@ def normal_vector(phi, theta, degrees=True):
 
     return np.array([x, y, z])
 
-def reduce_learmonth_data(df, tolerance=10, key="410"):
-    mask = np.where(np.abs(df[key].values - np.nanmedian(df[key])) < tolerance)
-    sun_track = df.iloc[mask]
-
-    return sun_track
-
 def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
     loc = coord.EarthLocation(lat=lat * unit,
                               lon=lon * unit)
