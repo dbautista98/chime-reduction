@@ -50,13 +50,13 @@ def move_data(input_directory, output_directory, move_method="cp", development=T
         update_transfer_log(input_directory, output_directory, log_file_dir=input_directory)
     return 
 
-def update_transfer_log(output_directory, data_destination, log_file_dir='./'):
+def update_transfer_log(input_directory, data_destination, log_file_dir='./'):
     log_file_name = "drift_transfer.log"
     outfile = f"{log_file_dir}/{log_file_name}"
     today = datetime.today().strftime('%Y-%m-%d')
 
     # get list of dates 
-    date_list = get_dates(output_directory)
+    date_list = get_dates(input_directory)
 
     # check if log file exists
     if not os.path.exists(outfile):
