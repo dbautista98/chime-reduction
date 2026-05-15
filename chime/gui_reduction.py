@@ -17,6 +17,29 @@ except:
     import util
 
 def write_csv(data_path, outdir=".", log=False, logdir="."):
+    """
+    The driver function to read in a day of raw CHIME data, calibrate it using solar 
+    position data, average the day of data down to a single spectrum, and save it to
+    a csv file. 
+
+    Arguments:
+    ---------------
+    data_path : str
+        The file path to the parent directory, as created by `make_waterfalls.move_files`
+        The parent directory is the name of the date of observation, with the 
+        format %Y_%j (eg: 2026_001 for January 1, 2026). An example path 
+        is (/path/to/directory/2026_001)
+    outdir : str
+        The file path to where the reduced csv file will be written. The default 
+        location is the current working directory 
+    log : bool
+        Flag indicating that the best fit parameters will be logged to a csv file
+        called "calibration_log.csv" and that a debug plot will be saved, showing 
+        the best fit gaussian to the data. The default is False.
+    logdir : str
+        The directory path to save the log file to. The default directory is the current 
+        working directory. If `log=False`, this variable is unused.
+    """
     date = data_path.split("/")[-2]
     data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="MHz")
     start_time = timestamps[0]
@@ -54,6 +77,25 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     return 
 
 def check_log_exits(log_path, date):
+    """
+    A function to check if the provided day of CHIME data has a successful gaussian
+    fit to the sun passing through the telescope beam. If there is a successful log, 
+    the file is skipped, otherwise the data is reduced and saved.
+
+    Arguments:
+    ---------------
+    log_path : str
+        The path to the log file containing data about all calibrations of CHIME data. 
+    date : str
+        The date of a specific file to check calibration status of. 
+
+    Returns:
+    ---------------
+    success : bool
+        Returns True if there is a log of a successful calibration.
+        Returns False if there is no calibration, or if there are only logs of
+        unsuccessful calibration attempts.
+    """
     if not log_path:
         return False
     else:

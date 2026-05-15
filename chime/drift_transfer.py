@@ -17,6 +17,22 @@ DEVELOPMENT = False
 testing = True
 
 def get_dates(target_directory):
+    """
+    Traverse target_directory to search for subdirectories. The reduced CHIME data
+    are stored in a staging directory in subdirectories named by the date the data 
+    was taken.  It is these subdirectories that are returned. 
+
+    Arguments:
+    ---------------
+    target_directory : str
+        The file path to the staging directory to search for reduced data
+
+    Returns:
+    ---------------
+    date_list : lst
+        A list of the subdirectories, where each subdirectory contains a single day 
+        of reduced CHIME data. 
+    """
     f = []
     for (dirpath, dirnames, filenames) in os.walk(target_directory):
         f.extend(filenames)
@@ -25,6 +41,29 @@ def get_dates(target_directory):
     return date_list
 
 def move_data(input_directory, output_directory, move_method="cp", development=True):
+    """
+    This function moves the reduced CHIME files from the staging directory to the 
+    ingestion location for DRIFT. 
+
+    Arguments:
+    ---------------
+    input_directory : str
+        File path to the directory where the CHIME data is staged before sending to 
+        DRIFT ingestion
+    output_directory : str
+        File path to where the data will be ingested by DRIFT 
+    move_method : str
+        The linux command to transfer the data to the ingestion location. The options 
+        are `mv` or `cp` and the default is `cp`
+    development : bool
+        A flag indiacting whether the script is being used for testing or production. If 
+        in development mode, the data will not be moved, but the commands that would be 
+        used to move the data will be printed to the console. The default is 
+        set to True (function is in development mode)
+    """
+
+    assert move_method in ["cp", "mv"], "move_method must be either cp or mv"
+
     # file wrangling commands
     file_grab = f"{input_directory}/*/*.csv"
     command = f"{move_method} {file_grab} {output_directory}"
@@ -42,7 +81,7 @@ def move_data(input_directory, output_directory, move_method="cp", development=T
     # actually move files
     if not development:
         os.system(command)
-        
+
         print()
         print("new file location(s):")
         print(f"ls {output_directory}/*csv")
@@ -51,6 +90,26 @@ def move_data(input_directory, output_directory, move_method="cp", development=T
     return 
 
 def update_transfer_log(input_directory, data_destination, log_file_dir='./'):
+    """
+    Record the filename, date of transfer, transfer location, and transfer success state
+    for each file moved. 
+
+    TODO:
+     - check why the transfer log gets the full list of moved files written for each
+     | file moved.
+     |-> should only be writing each file once. 
+
+    Arguments:
+    ---------------
+    input_directory : str
+        File path to the directory where the CHIME data is staged before sending to 
+        DRIFT ingestion
+    data_destination : str
+        File path to where the data was moved so it can be ingested by DRIFT 
+    log_file_dir : str
+        File path to where the log file will be written. The default is the current
+        working directory. 
+    """
     log_file_name = "drift_transfer.log"
     outfile = f"{log_file_dir}/{log_file_name}"
     today = datetime.today().strftime('%Y-%m-%d')
@@ -77,6 +136,21 @@ def update_transfer_log(input_directory, data_destination, log_file_dir='./'):
     return 
 
 def drift_transfer_driver(host_name):
+    """
+    The driver function to gather and move the reduced CHIME data so it can be ingested 
+    by DRIFT. This transfer will be moving files from the GBO machines to the data machines
+    at Socorro
+
+    Arguments:
+    ---------------
+    host_name : str
+        The name of the machine this function is executed on. 
+
+    Returns:
+    ---------------
+    success : bool
+        The success state of transferring the data. 
+    """
     production = ["gygax"]
     test = ["hypatia", "prospero", "newton", "planck"]
 
@@ -106,7 +180,7 @@ def drift_transfer_driver(host_name):
         move_method = "cp"
         move_data(input_directory, output_directory, move_method, development=(not test))
         return True
-    
+
     else:
         print("not running on a valid machine:")
         print(host_name)

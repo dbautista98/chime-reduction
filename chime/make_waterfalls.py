@@ -14,7 +14,39 @@ except:
     import calibration
     import util
 
+# TODO: 
+#  - what happens if time_zone=None goes into make_waterfalls?
+
 def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time_zone=None):
+    """
+    This function reads in the CHIME data and uses it to generate and save a waterfall plot. 
+    It expects to be given the path to a directory containing the corresponding .npy files. 
+
+    Arguments:
+    ---------------
+    data_path : str
+        The file path to the parent directory, as created by `make_waterfalls.move_files`
+        The parent directory is the name of the date of observation, with the 
+        format %Y_%j (eg: 2026_001 for January 1, 2026). An example path 
+        is (/path/to/directory/2026_001)
+    outdir : str
+        The parent directory that the organized data can be found in. This function 
+        generates the last directory level based on the file name. The default directory 
+        is the current working directory. 
+    outtype : str
+        THe file type that the resulting waterfall plot will be saved as. The options 
+        are {png, pdf}, and the default is to save as a png. 
+    calibrated : bool
+        A flag indicating whether to calibrate the data to Jy before generating the 
+        waterfall plot. If the data is not calibrated, the data will have units of counts. 
+        The default is to not calibrate the data.
+    time_zone : datetime.timezone
+        A datetime object indicating what timezone the data is in. The default is to 
+        use UTC when generating the waterfall plot.
+    """
+
+    assert outtype in ["png", "pdf"], "outtype must be either png or pdf"
+
     CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
     if calibrated:
         unit = "Jy"
@@ -49,6 +81,29 @@ def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time
     plt.close()
 
 def move_files(data_dir, outdir):
+    """
+    Organize the provided directory, moving all raw CHIME data (.npy files) into 
+    directories named with the date that the data was taken (YYYY_DDD format). These
+    directories are created according to the date data that is contained within the 
+    file names and can be returned using `util.get_date(filepath)`
+
+    Before running this function, there are many .npy files. 
+    After running this function, the .npy files are contained in directories with 
+    a naming convention of (YYYY_DDD)
+
+    Example end result: 
+        $ ls 
+        2026_001/
+        2026_002/
+        2026_003/
+
+    Arguments:
+    ---------------
+    data_dir : str
+        The path to the directory containing the CHIME .npy files to organize. 
+    outdir : str
+        The location that the CHIME .npy files should be organized and moved to. 
+    """
     print(f"searching for .npy files in {data_dir}")
     all_files = glob.glob(f"{data_dir}/*npy")
     if len(all_files) == 0:
@@ -66,6 +121,29 @@ def move_files(data_dir, outdir):
             shutil.move(file, outpath)
 
 def make_waterfalls(outdir, outtype='png', calibrated=False, time_zone=None):
+    """
+    Searches for directories with the naming convention (YYYY_DDD), and generates 
+    waterfall plots generated from the contents of the .npy files. These waterfall
+    plots will be written into the directry with the corresponding date. 
+
+    Arguments:
+    ---------------
+    outdir : str
+        The location that the waterfall plots will be written to. These should be the
+        same directory that the .npy files are stored in. 
+    outtype : str
+        THe file type that the resulting waterfall plot will be saved as. The options 
+        are {png, pdf}, and the default is to save as a png. 
+    calibrated : bool
+        A flag indicating whether to calibrate the data to Jy before generating the 
+        waterfall plot. If the data is not calibrated, the data will have units of counts. 
+        The default is to not calibrate the data.
+    time_zone : datetime.timezone
+        A datetime object indicating what timezone the data is in. The default is to 
+        use UTC when generating the waterfall plot.
+    """
+    assert outtype in ["png", "pdf"], "File type should be either png or pdf"
+
     dirs = glob.glob(f"{outdir}/202*/")
     try:
         dirs.remove("__pycache__/")

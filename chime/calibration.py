@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 from scipy.optimize import curve_fit
 
 # TODO:
-# - remove hardcoded filepaths from calibration function
+# - remove hardcoded filepaths from calibration function (sunPosition specifically)
 
 #### CHIME definitions
 CHIME_azimuth  = 305.3 # degrees
@@ -28,19 +28,90 @@ sd_410 = 8.88 * 1e4  # standard deviation of solar flux at 410 MHz in Jy
 sd_610 = 10.11 * 1e4   # standard deviation of solar flux at 610 MHz in Jy
 
 def gaussian(x, height, center, width, baseline):
+    """
+    Define a gaussian function specified by height, center
+    width, and baseline. The gaussian takes the form:
+
+    y = height * exp( -0.5 * (x - center)**2 / width**2 ) + baseline
+
+    Arguments:
+    ---------------
+    x : numpy.ndarray
+        The x values for which gaussian will reutrn values
+    height : float
+        The amplitude of the gaussian
+    center : float
+        The center (mean) of the gaussian
+    width : float
+        The standard deviation of the gaussian
+    baseline : float
+        The baseline offset from zert of the gaussian.
+
+    Returns:
+    ---------------
+    y : numpy.ndarray
+        The value of the gaussian for the provided inputs
+    """
     return height * np.exp( -0.5*(x - center)**2 / (width**2)) + baseline
 
 def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matched_index=1900, outdir=".", filename='test'):
+    """
+    Calibrate the provided data by fitting a gaussian to signal of the sun passing
+    through the CHIME beam. These fit coefficients, along with a known flux value
+    of the sun will be used to derive a conversion factor to convert from counts 
+    to Jansky (Jy). 
+
+    Calls `scipy.optimize.curve_fit` to determine best fit parameters
+    for a gaussian, based on the provided data
+
+    Arguments:
+    ---------------
+    data_grid : numpy.ndarray
+        The input CHIME data to calibrate. The data shape is 
+        expected to be (n_steps,1024)
+    freq_array : numpy.ndarray
+        The range of frequency values for the CHIME data. The
+        data is from 400 - 800 MHz and has 1024 freuency channels
+    target_freq : float
+        The frequency for which a known flux value of the sun is known 
+    flux : float
+        The known flux value of the sun. This is used to set the conversion
+        from counts to Jy 
+    debug : bool
+        Option to generate a debug plot showing the gaussian fit on the 
+        data. This is useful for visual verification of fit success. 
+        The default value is False
+    matched_index : int
+        The estimated timestamp index that the sun passes through the CHIME
+        beam. Based on how the data is saved, 1900 serves as a good estimate 
+        for when the sun passes. Occasionally there will be data that is cut
+        differently, which will often require manual re-calibration. 
+    outdir : str
+        Path to where the debug plot will be saved. The default value 
+        is the current working directory
+    filename : str
+        The name of the debug plot to generate. The default is "test"
+
+    Returns:
+    ---------------
+    calibrated_grid : numpy.ndarray
+        The calibrated array of CHIME data. This data has units of (Jy)
+        and has the same shape as the input data_grid
+    coeff : numpy.ndarray
+        The best fit coefficeints from fitting a gaussian to the signal 
+        of the sun passing through CHIME's beam. The order of the coefficients
+        is the same as in `gaussian` above: (height, center, width, baseline)
+    """
     index = np.argmin(np.abs(target_freq - freq_array))
     lower = max((matched_index - 300, 0))
     upper = min((matched_index + 300, len(data_grid)-1))
     freq_slice = data_grid[lower:upper, index]
 
-    # mask rfi in sun 
+    # mask potential rfi in sun 
     mask = np.where(freq_slice < 1e9)
     freq_slice = freq_slice[mask]
-    xx = np.linspace(lower, upper, num=len(freq_slice))#np.arange(lower, upper) # may need to be linspace
-    
+    xx = np.linspace(lower, upper, num=len(freq_slice))
+
     # define guessing parameters
     bounds = ((0,np.min(xx),3,0), (1e9, np.max(xx), 100, np.inf))
     p0=(1e8, matched_index, 10, 1e7)
@@ -67,7 +138,7 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
         bounds = ((0,np.min(xx),3,0), (1e9, np.max(xx), 100, np.inf))
         p0=(800000, matched_index, 10, 1e5)
         refit, cov = curve_fit(gaussian, xx,  calibrated_slice, p0=p0, bounds=bounds)
-        
+
         axs[1].plot(np.arange(lower, upper), calibrated_grid[lower:upper, index], label="calibrated data")
         axs[1].hlines(flux, lower, upper, label="given flux", color="black")
         axs[1].hlines(refit[0], lower, upper, label="fitted flux", color="red", linestyle="dashed")
@@ -85,6 +156,39 @@ def gauss_fit_peak(data_grid, freq_array, target_freq, flux, debug=False, matche
     return calibrated_grid, coeff
 
 def load_CHIME_data(data_dir, unit="MHz"):
+    """
+    Read in the CHIME data after it has been organized by make_waterfalls.move_files
+    This function takes in the parent directory (eg: /path/to/directory/2026_001) 
+    and returns three objects: the data array-- shape: (nint, 1024; the frequency axixs, 
+    and the timestamps for each integration. 
+
+    Arguments:
+    ---------------
+    data_dir : str
+        The file path to the parent directory, as created by `make_waterfalls.move_files`
+        The parent directory is the name of the date of observation, with the 
+        format %Y_%j (eg: 2026_001 for January 1, 2026). An example path 
+        is (/path/to/directory/2026_001)
+    unit : str
+        The unit to return the frequency axis. The options are {Hz, MHz} and the
+        default is MHz 
+
+    Returns:
+    ---------------
+    CHIME_data : numpy.ndarray
+        Raw data from a day of CHIME data, as provided by the CHIME 
+        team to GBO. The data has shape of (nint, 1024) -- the number of
+        time steps, and the number of frequency channels
+    frequency : numpy.ndarray
+        The frequency axis of the CHIME data. The native CHIME frequency range
+        is 400 - 800 MHz, and is split into 1024 channels. This data has a 
+        frequency resolution of 390.625 kHz. 
+    timestamps : list of datetime.datetime
+        The timestamps in UTC for each integration of the retreived data. The 
+        timestamps are ordered such that the first entry is the start of the 
+        data and the last timestamp is the end of the observtion. The time 
+        resolution is ~30 seconds. 
+    """
     files = glob.glob(f"{data_dir}/*npy")
     files.sort()
     data_path, end_path, start_path = files
@@ -108,6 +212,25 @@ def load_CHIME_data(data_dir, unit="MHz"):
     return CHIME_data, frequency, timestamps
 
 def load_Learmonth_data(data):
+    """
+    Load a day of data collected by Learmonth Solar Observatory in Australia. LSO
+    collects data over a range of frequencies, and the data that is most interesting
+    for CHIME are at 410 and 610 MHz. These overlap with CHIME's sensitivity range and 
+    can be used for calibrating the data. 
+    This function returns a pandas DataFrame with columns for the timestamp and 
+    frequency of observation. 
+
+    Arguments:
+    ---------------
+    data : str
+        Filepath to the learmonth .SRD file for a single day
+
+    Returns:
+    ---------------
+    learmonth_df : pandas.core.frame.DataFrame
+        The pandas DataFrame containing the Learmonth data from the 
+        provided data
+    """
     UT_time, f_245, f_410, f_610, f_1415, f_2695, f_4975, f_8800, f_15400 = np.loadtxt(data, delimiter=" ", unpack=True, dtype=str)
     freqs = [f_245, f_410, f_610, f_1415, f_2695, f_4975, f_8800, f_15400]
     for i in range(len(freqs)):
@@ -135,9 +258,29 @@ def load_Learmonth_data(data):
 
 def angular_separation(az1, el1, az2, el2, deg=True):
     """
+    Calculate the angular separation of two points on a unit sphere
+
     equations pulled from: 
     https://www.atnf.csiro.au/people/Tobias.Westmeier/tools_separation.php
     https://www.atnf.csiro.au/people/Tobias.Westmeier/tools_spherical.php#separation
+
+    Arguments:
+    ---------------
+    az1 : numpy.ndarray
+        Azimuth coordinate of target one to compare. This is numpy array compatible. 
+    el1 : numpy.ndarray
+        Elevation coordinate of target one to compare. This is numpy array compatible. 
+    az2 : float
+        Azimuth coordinate of target two to compare
+    el2 : float
+        Elevation coordinate of target two to compare
+    deg : bool
+        flag indicating that the data is in units of degrees
+
+    Returns:
+    ---------------
+    angle : numpy.ndarray
+        The angular separation in radians. This is numpy array compatible. 
     """
 
     if deg:
@@ -150,6 +293,28 @@ def angular_separation(az1, el1, az2, el2, deg=True):
     return a
 
 def match_times(min_separation_time, timestamps, timezone=-4):
+    """
+    Takes a time of day (hh:mm) and the array of CHIME integration timestamps
+    and finds the index for the closest CHIME timestamp
+
+    Arguments:
+    ---------------
+    min_separation_time : str   
+        The timestamp (hh:mm in local time) for which the sun was at its closest to 
+        the main beam of CHIME. Example timestamp is ("15:55")
+    timestamps : list of datetime.datetime
+        The timestamps in UTC for each integration of the retreived data. The 
+        timestamps are ordered such that the first entry is the start of the 
+        data and the last timestamp is the end of the observtion. The time 
+        resolution is ~30 seconds. 
+    timezone : int
+        Time zone separation from UTC. The default is -4 (EDT)
+
+    Returns:
+    ---------------
+    closest_approach_index : int
+        The index of the timestamp that is closest to the provided timestamp
+    """
     time_separation = []
     timestamps = timestamps.copy()
     min_hour = int(min_separation_time.split(":")[0])
@@ -165,7 +330,35 @@ def match_times(min_separation_time, timestamps, timezone=-4):
 
 def get_closest_position(sun_positions, data_timestamps, target_azimuth=305.3, target_elevation=59.9129, deg=True):
     """
-    default azimuth and elevation are the best fit pointing for CHIME at GBO
+    Takes in a pandas DataFrame of the suns position vs time, the timestamps of the 
+    CHIME data, and the AZ/EL of CHIME's main beam. default azimuth and elevation are 
+    the pointing of CHIME's main beam at GBO. Uses these data to find the index for 
+    the sun's closest approach to the CHIME beam. 
+
+    Arguments:
+    ---------------
+    sun_positions : pandas.core.frame.DataFrame
+        A DataFrame containing the time and AZ/EL of the sun over the course of a
+        day. 
+    data_timestamps : list of datetime.datetime
+        The timestamps for the integrations of the CHIME data
+    target_azimuth : float
+        The azimuth angle of the target, for which the closest approach should be found. 
+        The default azimuth is 305.3 degrees. This was found to be where the main beam
+        of CHIME points. 
+    target_elevation : float
+        The elevation angle of the target, for which the closest approach should be found. 
+        The default elevation is 59.9129 degrees. This was found to be where the main beam
+        of CHIME points.
+    deg : bool
+        A flag indicating that the input data has units of degrees. A False indicates 
+        that the input data has units of radians. The default is True
+
+    Returns:
+    ---------------
+    matched_index : int
+        The index corresponding to the CHIME timestamp for which the sun had the 
+        closest approach. 
     """
 
     separation = angular_separation(sun_positions["azimuth"].values,
@@ -173,7 +366,7 @@ def get_closest_position(sun_positions, data_timestamps, target_azimuth=305.3, t
                                     target_azimuth,
                                     target_elevation, 
                                     deg=deg)
-    
+
     min_index = np.argmin(separation)
     min_separation_time = sun_positions.iloc[min_index]["time"]
     timezone = sun_positions.iloc[min_index]["time_zone"]
@@ -184,13 +377,33 @@ def get_closest_position(sun_positions, data_timestamps, target_azimuth=305.3, t
 
 def normal_vector(phi, theta, degrees=True):
     """
+    Convert a unit vector in spherical coordinates specified by angles phi and 
+    theta to cartesian coordinates. 
+
+    Since there is frequent confusion about the definition of phi, theta betweem the 
+    physics and math communities, here are the definitions I use for this calculation: 
+
     phi is the azimuthal angle and runs from 0 to 2 pi radians
     theta is the altitude angle and runs from -pi/2 to pi/2
+
+    Arguments:
+    ---------------
+    phi : numpy.ndarray 
+        The azimuthal angle of the vector. Range: (0, 2 pi) radians
+    theta : numpy.ndarray 
+        The altitude(elevation) angle of the vector. Range (-pi/2, pi/2) radians
+    degrees : bool
+        Flag indicating that the input data is in units of degrees. The default is True.
+
+    Returns:
+    ---------------
+    vector : numpy.ndarray 
+        The cartesian coordinates of the vector. (x, y, z), shape: (3,)
     """
     if degrees:
         phi = phi * np.pi / 180
         theta = theta * np.pi / 180
-    
+
     x = np.cos(phi)*np.cos(theta)
     y = np.sin(phi)*np.cos(theta)
     z = np.sin(theta)
@@ -198,9 +411,37 @@ def normal_vector(phi, theta, degrees=True):
     return np.array([x, y, z])
 
 def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
+    """
+    Takes in a list of timestamps and the lat/lon coordinates of a place on earth
+    and calculates the alt/az of the sun for each of the provided timestamps. 
+
+    Arguments:
+    ---------------
+    timestamp : list of datetime.datetime
+        The timestamps in UTC for each integration of the retreived data. These are
+        used to calculate the sun's position in the sky above the provided coordinates
+    lat : float
+        The lattitude on earth for which to calculate the sun's position in the sky. The 
+        default value is 38.433056; the location of the CHIME antenna at GBO
+    lon : float
+        The longitude on earth for which to calculate the sun's position in the sky. The 
+        default value is -79.839722; the location of the CHIME antenna at GBO
+    unit : astropy.units.core.Unit
+        The units for which the earth coordinates are provided. These should be some 
+        measure of angle. The default is u.deg
+
+    Returns:
+    ---------------
+    alt : numpy.ndarray
+        The calculated altitude angle of the sun in the sky above the provided coordinates
+        for the provided timestamps. 
+    az : numpy.ndarray
+        The calculated azimuth angle of the sun in the sky above the provided coordinates
+        for the provided timestamps. 
+    """
     loc = coord.EarthLocation(lat=lat * unit,
                               lon=lon * unit)
-    
+
     t = Time(timestamp, scale="utc")
     altaz = coord.AltAz(location=loc, obstime=t)
     sun = coord.get_sun(t)
@@ -210,6 +451,51 @@ def solar_position(timestamp, lat=38.433056, lon=-79.839722, unit=u.deg):
     return alt, az
 
 def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, outdir='.', filename='test', log=False, logdir="."):
+    """
+    Take in the raw CHIME data array, with a known flux (Jy) at a known frequency (MHz) 
+    and use the passage of the sun through the CHIME beam to fit a gaussian and use the 
+    fit parameters to convert the spectra from counts to Jy. 
+
+    This function can write to a log file the success/failure of calibration, as well as 
+    the calibration coefficients.
+
+    Optionally can save debug plot and data to validate performance. 
+
+    Arguments:
+    ---------------
+    chime_path : str
+        The file path to the parent directory, as created by `make_waterfalls.move_files`
+        The parent directory is the name of the date of observation, with the 
+        format %Y_%j (eg: 2026_001 for January 1, 2026). An example path 
+        is (/path/to/directory/2026_001)
+    target_freq : float
+        The frequency (in Mhz) to apply a known flux value to. The reference frequency 
+        for calibration. The default frequency is 410 MHz. 
+    target_flux : float
+        The flux value (in Jy) corresponding to `target_freq`. The default flux is 49 * 1e4 Jy. 
+        This value was inferred as the median flux value based on a large number of LSO data. 
+    debug : bool
+        Flag indicating that a debug plot will be saved, showing the best fit gaussian to the
+        data. The default is False (no debug plot will be saved)
+    outdir : str
+        The directory path to save the debug plot to. The default directory is the current 
+        working directory. If `debug=False`, this variable is unused. 
+    filename : str
+        The filename for the debug plot. The default filename is "test." If `debug=False`, 
+        this variable is unused. 
+    log : bool
+        Flag indicating that the best fit parameters will be logged to a csv file
+        called "calibration_log.csv". The default is False.  
+    logdir : str 
+        The directory path to save the log file to. The default directory is the current 
+        working directory. If `log=False`, this variable is unused.
+
+    Returns:
+    ---------------
+    calibrated_grid : numpy.ndarray
+        The CHIME data array, calibrated to Jy based on the provided frequency and flux 
+        values. 
+    """
     date = chime_path.split("/")[-2]
     try:
         sun_df = pd.read_csv(f"/users/dbautist/CHIME_landing_directory/sunPosition/{date}_CHIME.csv")
@@ -250,7 +536,7 @@ def calibration(chime_path, target_freq=410, target_flux=49 * 1e4, debug=False, 
     except Exception as err:
         print(err)
         raise 
-    
+
     if log:
         filename = "calibration_log.csv"
         outpath = f"{logdir}/{filename}"
