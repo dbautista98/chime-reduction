@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from chime.calibration import *
+import chime.calibration as cal
+from datetime import datetime
+import glob
 import pandas as pd
 from tqdm import trange
 import os
@@ -56,7 +58,7 @@ else:
             for i in trange(len(month_dict[year+month])):
                 this_path = month_dict[year+month][i]
                 data_paths.append(this_path)
-                df = load_Learmonth_data(this_path)
+                df = cal.load_Learmonth_data(this_path)
                 if loop_bool(df):
                     sufficient_data.append(this_path)
                     good_data.append(True)
@@ -116,4 +118,3 @@ plt.savefig(f"{outdir}/solar_flux.png", transparent=False, bbox_inches="tight")
 # with open(f"{outdir}/good_data.txt", "w") as f:
 #     for file in sufficient_data:
 #         f.write(f"{file}\n")
-
