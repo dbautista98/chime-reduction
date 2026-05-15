@@ -8,3 +8,4 @@ calibration_log.csv
 chime.egg-info
 plots/
 *.log
+testing/
