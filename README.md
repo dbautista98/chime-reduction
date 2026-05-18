@@ -36,9 +36,9 @@ Navigate into this newly cloned repository:
 
     cd chime-reduction
 
-Use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) to create a python environment and install the necessary packages. If installing on GBO data reduction machines, there is one extra step to enable conda before you can create the package. 
+Use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) to create a python environment and install the necessary packages. If installing on GBO data reduction machines, there is an additional step of enabling conda before you can create the environment. 
 
-    conda create --file environment.yml
+    conda env create --file environment.yml
 
 Activate this new conda environment
 
