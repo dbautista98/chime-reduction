@@ -1,4 +1,4 @@
-name: chime-dev
+name: chime
 channels:
   - conda-forge
   - defaults
