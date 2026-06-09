@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import astropy.units as u
 
+# plotly imports
+import plotly.express as px
+
 # CHIME package imports
 try:
     from . import calibration
@@ -46,7 +49,6 @@ def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time
     """
 
     assert outtype in ["png", "pdf"], "outtype must be either png or pdf"
-
     CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
     if calibrated:
         unit = "Jy"
@@ -79,6 +81,45 @@ def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time
     plt.savefig(f"{outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}", bbox_inches="tight", transparent=False)
     print(f"saved plot to: {outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}")
     plt.close()
+
+def plot_html(data_path, outdir="./", outtype="html", calibrated=False, time_zone=None):
+
+    assert outtype in ["html"], "outtype must be html"
+    CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
+
+    if calibrated:
+        unit = "Jy"
+        CHIME_data = calibration.calibration(data_path)
+        vmin=1e4
+        vmax=7e5
+    else:
+        unit = "counts"
+        vmin=0
+        vmax=4e7
+    start_time = timestamps[0]
+    end_time = timestamps[-1]
+
+    pfig = px.imshow(
+                CHIME_data,
+                x = frequency,      # Frequency (must remove leading dimension)
+                y = timestamps,                          # Time (datetime)
+                # origin="upper",                 # matches Matplotlib invert_yaxis()
+                aspect="auto",
+                zmin=vmin,
+                zmax=vmax,
+                color_continuous_scale="Viridis",
+            )
+
+    pfig.update_layout(
+        title=f"GBO CHIME outrigger data\n{start_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')} to {end_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')}",
+        xaxis_title="Frequency (Hz)",
+        yaxis_title=f"Time ({start_time.astimezone(time_zone).strftime('%Z')})",
+        coloraxis_colorbar=dict(title=f"Magnitude ({unit})"),
+    )
+    pfig.update_xaxes(tickformat="~s")          # x-axis: engineering notation (like EngFormatter) e.g., 1k, 10M, etc.
+    pfig.update_yaxes(tickformat="%H:%M")       # y-axis: datetime formatting (HH:MM)
+    pfig.write_html(f"{outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}")  # Save to HTML
+    return 
 
 def move_files(data_dir, outdir):
     """
@@ -158,6 +199,7 @@ def make_waterfalls(outdir, outtype='png', calibrated=False, time_zone=None):
             contents = glob.glob(dir + "/*npy")
             contents.sort()
             plot_waterfall(dir, outdir=f"{outdir}/{date}", outtype=outtype, calibrated=calibrated, time_zone=time_zone)
+            plot_html(dir, outdir=f"{outdir}/{date}", outtype="html", calibrated=calibrated, time_zone=time_zone)
 
 if __name__ == "__main__":
     outtype = "png"
