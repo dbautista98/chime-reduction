@@ -22,8 +22,9 @@ except:
 
 def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time_zone=None):
     """
-    This function reads in the CHIME data and uses it to generate and save a waterfall plot. 
-    It expects to be given the path to a directory containing the corresponding .npy files. 
+    This function reads in the CHIME data and uses it to generate and save a static waterfall 
+    plot using matplotlib. It expects to be given the path to a directory containing the 
+    corresponding .npy files. 
 
     Arguments:
     ---------------
@@ -83,7 +84,33 @@ def plot_waterfall(data_path, outdir="./", outtype="png", calibrated=False, time
     plt.close()
 
 def plot_html(data_path, outdir="./", outtype="html", calibrated=False, time_zone=None):
+    """
+    This function reads in the CHIME data and uses it to generate and save an interactive 
+    waterfall plot using plotly. It expects to be given the path to a directory containing the 
+    corresponding .npy files. 
 
+    Arguments:
+    ---------------
+    data_path : str
+        The file path to the parent directory, as created by `make_waterfalls.move_files`
+        The parent directory is the name of the date of observation, with the 
+        format %Y_%j (eg: 2026_001 for January 1, 2026). An example path 
+        is (/path/to/directory/2026_001)
+    outdir : str
+        The parent directory that the organized data can be found in. This function 
+        generates the last directory level based on the file name. The default directory 
+        is the current working directory. 
+    outtype : str
+        THe file type that the resulting waterfall plot will be saved as. The options 
+        are {png, pdf}, and the default is to save as a png. 
+    calibrated : bool
+        A flag indicating whether to calibrate the data to Jy before generating the 
+        waterfall plot. If the data is not calibrated, the data will have units of counts. 
+        The default is to not calibrate the data.
+    time_zone : datetime.timezone
+        A datetime object indicating what timezone the data is in. The default is to 
+        use UTC when generating the waterfall plot.
+    """
     assert outtype in ["html"], "outtype must be html"
     CHIME_data, frequency, timestamps = calibration.load_CHIME_data(os.path.dirname(data_path))
 
@@ -119,6 +146,7 @@ def plot_html(data_path, outdir="./", outtype="html", calibrated=False, time_zon
     pfig.update_xaxes(tickformat="~s")          # x-axis: engineering notation (like EngFormatter) e.g., 1k, 10M, etc.
     pfig.update_yaxes(tickformat="%H:%M")       # y-axis: datetime formatting (HH:MM)
     pfig.write_html(f"{outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}")  # Save to HTML
+    print(f"saved plot to: {outdir}/{start_time.strftime('%Y_%j')}_waterfall.{outtype}")
     return 
 
 def move_files(data_dir, outdir):
