@@ -139,9 +139,15 @@ def plot_html(data_path, outdir="./", outtype="html", calibrated=False, time_zon
 
     pfig.update_layout(
         title=f"GBO CHIME outrigger data\n{start_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')} to {end_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')}",
-        xaxis_title="Frequency (Hz)",
+        xaxis_title="Frequency (MHz)",
         yaxis_title=f"Time ({start_time.astimezone(time_zone).strftime('%Z')})",
-        coloraxis_colorbar=dict(title=f"Magnitude ({unit})"),
+        coloraxis_colorbar=dict(title=f"Magnitude ({unit})",
+                                orientation='h',
+                                y=-0.15,
+                                x=0.5,
+                                len=0.7,
+                                xanchor="center", 
+                                yanchor="bottom"),
     )
     pfig.update_xaxes(tickformat="~s")          # x-axis: engineering notation (like EngFormatter) e.g., 1k, 10M, etc.
     pfig.update_yaxes(tickformat="%H:%M")       # y-axis: datetime formatting (HH:MM)
