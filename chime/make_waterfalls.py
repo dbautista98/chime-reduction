@@ -8,6 +8,8 @@ import astropy.units as u
 
 # plotly imports
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # CHIME package imports
 try:
@@ -88,6 +90,9 @@ def plot_html(data_path, outdir="./", outtype="html", calibrated=False, time_zon
     This function reads in the CHIME data and uses it to generate and save an interactive 
     waterfall plot using plotly. It expects to be given the path to a directory containing the 
     corresponding .npy files. 
+
+    A useful page for plotting with subplots:
+    https://stackoverflow.com/questions/75871154/plotly-share-x-axis-for-subset-of-subplots
 
     Arguments:
     ---------------
