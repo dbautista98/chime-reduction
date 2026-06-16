@@ -4,6 +4,8 @@ from datetime import datetime
 def check_dir(filepath):
     """
     Checks the existence of a filepath, and if it does not exist, it will create it. 
+    Updated to use os.makedirs(filepath), which will create the intermediate subdirectories
+    as needed
 
     Arguments:
     ---------------
@@ -13,7 +15,7 @@ def check_dir(filepath):
     if os.path.exists(filepath):
         return
     else:
-        os.mkdir(filepath)
+        os.makedirs(filepath)
         return
 
 def get_date(filepath):
