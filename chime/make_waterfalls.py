@@ -144,7 +144,7 @@ def plot_html(data_path, outdir="./", outtype="html", calibrated=False, time_zon
 
     pfig.update_layout(
         title=f"GBO CHIME outrigger data\n{start_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')} to {end_time.astimezone(time_zone).strftime('%Y-%m-%d %H:%M:%S %Z')}",
-        xaxis_title="Frequency (Hz)",
+        xaxis_title="Frequency (MHz)",
         yaxis_title=f"Time ({start_time.astimezone(time_zone).strftime('%Z')})",
         coloraxis_colorbar=dict(title=f"Magnitude ({unit})"),
     )
