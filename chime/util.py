@@ -44,6 +44,25 @@ def get_date(filepath):
     YYYY_DDD = time_UTC.strftime("%Y_%j")
     return YYYY_DDD 
 
+def yyyy_ddd_to_datetime(YYYY_DDD):
+    """
+    This is a useful function to convert back from the standardized form to a calendar
+    date. This is useful when going back to look up some data or programmataclly reference
+    a given date.
+
+    Arguments:
+    ---------------
+    YYYY_DDD : str
+        The standardized date to convert to. 
+
+    Returns:
+    ---------------
+    calendar_date : datetime.datetime
+        The calendar date as a datetime object 
+    """
+    datetime_obj = datetime.strptime(YYYY_DDD, "%Y_%j")
+    return datetime_obj
+
 def yyyy_ddd_to_Y_m_d(YYYY_DDD):
     """
     This is a useful function to convert back from the standardized form to a calendar
@@ -63,6 +82,6 @@ def yyyy_ddd_to_Y_m_d(YYYY_DDD):
     calendar_date : str
         The calendar date in year-month-day format
     """
-    datetime_obj = datetime.strptime(YYYY_DDD, "%Y_%j")
+    datetime_obj = yyyy_ddd_to_datetime(YYYY_DDD)
     standard_date = datetime_obj.strftime("%Y-%m-%d")
     return standard_date
