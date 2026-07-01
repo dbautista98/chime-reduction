@@ -56,4 +56,4 @@ At this point you should be able to activate the conda environment and run the p
 
 This can be confirmed by running 
 
-    check_installation.py
+    bash check_installation.py
