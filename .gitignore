@@ -9,3 +9,4 @@ chime.egg-info
 plots/
 *.log
 testing/
+.vscode
