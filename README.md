@@ -53,3 +53,7 @@ OR
     pip install .
 
 At this point you should be able to activate the conda environment and run the python files from this repository.
+
+This can be confirmed by running 
+
+    check_installation.py
