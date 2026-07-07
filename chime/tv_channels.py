@@ -3,6 +3,12 @@
 
 import matplotlib.pyplot as plt
 
+"""
+TODO:
+ - make plot_channel compatible with different frequency units. 
+   Currently only compatible with MHz 
+"""
+
 channel_dict = {
 				'15':{'lower':476, 'upper':482},
 				'16':{'lower':482, 'upper':488},
@@ -78,8 +84,21 @@ channel_dict = {
 
 def channel_lookup(freq, unit="MHz"):
     """
-    This function will be able to look up the TV channel that covers
-    a given frequency
+    This function looks up the TV channel whose frequency range covers
+    the provided frequency
+    
+    Arguments:
+    ---------------
+    freq : float
+		Frequency for which the overlapping TV channel is desired
+    unit : str
+		The units corresponding to the provided frequency. The
+        default unit is MHz 
+
+    Returns:
+    ---------------
+	chan : str
+		The channel whose frequency range covers the provided frequency 
     """
     if unit == "MHz":
         freq = freq
@@ -102,6 +121,20 @@ def plot_channel(ax, channel_number, color="tab:orange", opacity=0.25):
     """
     This function will overlay a shaded region on an existing
     plot and annotate it with the channel number 
+    
+    Arguments:
+    ---------------
+    ax : matplotlib.axes._axes.Axes
+		The matplotlib object to be annotated
+	channel_number : str
+		The channel number to be annotated
+	color : str
+		The color to use for the channel overlay. The default color
+        is 'tab:orange'
+	opacity : float
+		The opacity of the overlay. This must be beteween 0 and 1,
+        with 0 making it fully transparent, and 1 making it opaque. 
+        The default opacity is 0.25
     """
     ax.axvspan(channel_dict[channel_number]["lower"], 
                 channel_dict[channel_number]["upper"], 
