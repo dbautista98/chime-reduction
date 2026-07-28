@@ -10,6 +10,7 @@ TODO:
 """
 
 channel_dict = {
+				'14':{'lower':470, 'upper':476},
 				'15':{'lower':476, 'upper':482},
 				'16':{'lower':482, 'upper':488},
 				'17':{'lower':488, 'upper':494},
