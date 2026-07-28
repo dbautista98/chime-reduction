@@ -120,8 +120,8 @@ def check_log_exits(log_path, date):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="a script to calibrate a day of CHIME data and average it down to a single spectrum")
-    parser.add_argument("-indir", "-i", help="directory input data lives", default=os.getcwd())
-    parser.add_argument("-outdir", "-o", help="directory where output data goes", default=os.getcwd())
+    parser.add_argument("-indir", "-i", help="directory input data lives. The default directory is the current working directory.", default=os.getcwd())
+    parser.add_argument("-outdir", "-o", help="directory where output data goes. The default directory is the current working directory.", default=os.getcwd())
     parser.add_argument("-noplot", "-n", help="specify not to generate diagnostic plot", default=True, action="store_false")
     parser.add_argument("-logfile", "-l", help="specify log file path to check if this file has been reduced before", default=False)
     args = parser.parse_args()
