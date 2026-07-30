@@ -42,14 +42,20 @@ def write_csv(data_path, outdir=".", log=False, logdir="."):
     """
     date = data_path.split("/")[-2]
     data_grid, frequency, timestamps = calibration.load_CHIME_data(data_path, unit="MHz")
-    start_time = timestamps[0]
-
+    start_time = timestamps[1]
+    
+    #calling the python script that calculates and organizes based on real and interpolated data based on the day
+    #and Solar flux for that day, where "target" creates a mask of the data so it can be read in based on increasing
+    #date
+    res = pd.read_csv('/home/scratch/mburchil/REU2026/chime-reduction/chime/filtering_2025.csv') 
+    target = res[res['Date'] == start_time.strftime("%Y-%m-%d")]['Flux'].iloc[0] 
+    
     if log:
         util.check_dir(outdir+"/plots/")
 
-    data_grid = calibration.calibration(data_path, 
+    data_grid = calibration.calibration(data_path,                                 
                                         target_freq=410,
-                                        target_flux=calibration.median_410,
+                                        target_flux=target,  #data pulled from csv 
                                         debug=log, 
                                         outdir=outdir+"/plots/", 
                                         filename="debug",
