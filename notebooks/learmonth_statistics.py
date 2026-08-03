@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import chime.calibration as cal
-from datetime import datetime
+from datetime import datetime, date
 import glob
 import pandas as pd
 from tqdm import trange
@@ -162,18 +162,22 @@ if __name__ == "__main__":
     plt.savefig(f"{outdir}/610.png", bbox_inches="tight", transparent=False)
     plt.close()
 
-    solar_flare_date = datetime.strptime("2024_130", "%Y_%j")
+    solar_flare_dates = [
+                            datetime.strptime("2024_130", "%Y_%j"),
+                            date(2025, 11, 11) # X-class flare on November 11, 2025
+                         ]
+    flare_heights = [110, 250]
 
     plt.figure(figsize=(10, 6))
     plt.scatter(good_flux_df["date"], good_flux_df["flux_410"], label="410 MHz", s=5)
     plt.scatter(good_flux_df["date"], good_flux_df["flux_610"], label="610 MHz", s=5)
     plt.title("Median solar flux")
     plt.ylabel("flux [SFU]")
-    plt.xlabel("day of 2024")
+    plt.xlabel("date")
     plt.grid()
     plt.hlines(np.median(good_flux_df["flux_410"]), min(good_flux_df["date"]), max(good_flux_df["date"]), label=f"median 410 MHz = {np.median(good_flux_df["flux_410"])} +- %s"%np.round(np.std(good_flux_df["flux_410"]), 2))
     plt.hlines(np.median(good_flux_df["flux_610"]), min(good_flux_df["date"]), max(good_flux_df["date"]), color='orange', label=f"median 610 MHz = {np.median(good_flux_df["flux_610"])} +- %s"%np.round(np.std(good_flux_df["flux_610"]), 2))
-    plt.vlines(solar_flare_date, 30, 110, label="solar flare event", color="red")
+    plt.vlines(solar_flare_dates, 30, flare_heights, label="solar flare event", color="red")
     plt.legend()
     plt.savefig(f"{outdir}/solar_flux.png", transparent=False, bbox_inches="tight")
 
